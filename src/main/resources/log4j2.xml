@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" name="MyApp">
+
+  <Appenders>
+  	<Console name="console" target="SYSTEM_OUT">
+		<PatternLayout>
+            <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+        </PatternLayout>
+	</Console>
+    <RollingRandomAccessFile name="LogApp" fileName="${sys:LOG_PATH}/app.log" filePattern="${sys:LOG_PATH}/app-%d{yyyy-MM-dd_HH}_%i.log" immediateFlush="false" append="true" ignoreExceptions="false">
+        <PatternLayout>
+            <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <TimeBasedTriggeringPolicy interval="6" modulate="true"/>
+            <SizeBasedTriggeringPolicy size="50 MB"/>
+        </Policies>
+        <DefaultRolloverStrategy max="500"/>
+    </RollingRandomAccessFile>
+    <RollingRandomAccessFile name="Exception" fileName="${sys:LOG_PATH}/excetpion.log" filePattern="${sys:LOG_PATH}/exception-%d{yyyy-MM-dd_HH}_%i.log" immediateFlush="false" append="true" ignoreExceptions="false">
+        <PatternLayout>
+            <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+        </PatternLayout>
+        <Policies>
+            <TimeBasedTriggeringPolicy interval="6" modulate="true"/>
+            <SizeBasedTriggeringPolicy size="50 MB"/>
+        </Policies>
+        <DefaultRolloverStrategy max="500"/>
+    </RollingRandomAccessFile>
+    <Async name="ASYNC_LogApp" includeLocation="true">
+        <AppenderRef ref="LogApp" />
+    </Async>
+    <Async name="ASYNC_Exception" includeLocation="true">
+        <AppenderRef ref="Exception" />
+    </Async>
+  </Appenders>
+
+  <Loggers>
+    <Logger name="kr.gooroom.gpms" level="debug" additivity="false">
+        <AppenderRef ref="ASYNC_LogApp"/>
+    </Logger>
+    <Logger name="jdbc.sqlonly" level="debug" additivity="false">
+    	<AppenderRef ref="ASYNC_LogApp"/>
+	</Logger>
+    <Logger name="jdbc.sqltiming" level="debug" additivity="false">
+	    <AppenderRef ref="ASYNC_LogApp"/>
+	</Logger>
+    <Logger name="jdbc.audit" level="debug" additivity="false">
+	</Logger>
+    <Logger name="jdbc.resultset" level="debug" additivity="false">
+	</Logger>
+    <Logger name="jdbc.resultsettable" level="debug" additivity="false">
+	    <AppenderRef ref="ASYNC_LogApp"/>
+	</Logger>
+    <Logger name="jdbc.connection" level="debug" additivity="false">
+	    <AppenderRef ref="ASYNC_LogApp"/>
+	</Logger>
+    <Root level="error">
+		<AppenderRef ref="console"/>
+		<AppenderRef ref="ASYNC_Exception"/>
+    </Root>
+  </Loggers>
+  
+</Configuration>

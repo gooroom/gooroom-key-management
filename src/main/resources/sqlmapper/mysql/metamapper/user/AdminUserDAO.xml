@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="AdminUserDAO">
+
+	<resultMap type="adminUserVO" id="adminUserInfo">
+	
+		<result property="adminId" column="ADMIN_ID" />
+		<result property="adminNm" column="ADMIN_NM"/>
+		
+		<result property="adminPw" column="ADMIN_PW"/>
+		
+		<result property="statusCd" column="STATUS_CD"/>
+
+		<result property="regDate" column="MOD_DT" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+		<result property="regUserId" column="MOD_USER_ID"/>
+	
+		<result property="modDate" column="REG_DT" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+		<result property="modUserId" column="REG_USER_ID"/>
+		
+		<result property="connIp" column="CONN_IP"/>
+	
+	</resultMap>
+
+
+	<!-- 관리자 리스트 조회 -->
+	<select id="selectAdminUserList" parameterType="String" resultMap="adminUserInfo">
+	
+		SELECT 
+			ADMIN_ID, ADMIN_NM, ADMIN_PW, IF(STATUS_CD='1', '정상', '사용중지') AS STATUS_CD, 
+			MOD_USER_ID, MOD_DT, REG_USER_ID, REG_DT 
+		FROM ADMIN_MSTR
+
+	</select>
+
+	<!-- 관리자 아이디 중복 확인 -->
+	<select id="isExistAdminUserId" parameterType="String" resultType="boolean">
+	
+		SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END ISEXIST FROM ADMIN_MSTR WHERE ADMIN_ID = #{adminId}
+
+	</select>
+	
+	<!-- 관리자 정보 삭제 -->
+	<delete id="deleteAdminUserData" parameterType="String">
+		
+		UPDATE ADMIN_MSTR SET STATUS_CD='0' WHERE ADMIN_ID = #{adminId}
+
+	</delete>
+
+
+	<!-- 관리자 정보 조회:인증!!!! -->
+	<select id="selectAdminUserAuthAndInfo" parameterType="hashmap" resultMap="adminUserInfo">
+	
+		SELECT ADMIN_ID, ADMIN_NM
+		FROM ADMIN_MSTR
+		WHERE ADMIN_ID = #{adminId} AND ADMIN_PW = SHA2(#{adminPw}, 256)
+
+	</select>
+
+</mapper>

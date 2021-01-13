@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+
+	<!-- Message Convertor configuration 다국어처리 -->
+	<bean id="messageSource"
+		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>classpath:/messages/message</value>
+			</list>
+		</property>
+		<!--'fallbackToSystemLocale' property가 true인 경우, locale에 해당하는 file이 없을경우 
+			system locale을 사용 -->
+		<property name="fallbackToSystemLocale" value="false" />
+		<!-- 60초마다 업데이트 된 properties 파일을 새로 로드함 -->
+		<property name="cacheSeconds" value="60" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+
+	<!-- static Message Convertor configuration 다국어처리 연결 --> 
+	<bean id="staticMessageSource" class="kr.gooroom.gpms.common.utils.MessageSourceHelper">
+        <constructor-arg ref="messageSource" />	
+	</bean>
+	<!-- 
+	<bean id="messageSourceAccessor"
+		class="org.springframework.context.support.MessageSourceAccessor">
+		<constructor-arg>
+			<ref bean="messageSource" />
+		</constructor-arg>
+	</bean>
+	 -->
+
+	<!-- Properties Files -->
+	<bean id="propertyConfigurer" class="org.jasypt.spring31.properties.EncryptablePropertyPlaceholderConfigurer">
+        <constructor-arg ref="configurationEncryptor" />
+        <property name="locations">
+            <list>
+                <value>classpath:/properties/db.properties</value>
+            </list>
+        </property>
+    </bean>
+
+	<!-- Meta DataSource Configuration -->
+	<bean id="dataSourceMeta" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${metadb.driverClassName}" />
+		<property name="url" value="${metadb.url}" />
+		<property name="username" value="${metadb.username}" />
+		<property name="password" value="${metadb.password}" />
+		<property name="initialSize" value="${metadb.initialSize}" />
+		<property name="maxActive" value="${metadb.maxActive}" />
+		<property name="maxIdle" value="${metadb.maxIdle}" />
+		<property name="minIdle" value="${metadb.minIdle}" />
+		<property name="maxWait" value="${metadb.maxWait}" />
+		<property name="poolPreparedStatements" value="true"></property>
+		<property name="maxOpenPreparedStatements" value="50"></property>
+		<property name="validationQuery" value="select 1" ></property>
+	</bean>
+
+	<!-- meta 데이터베이스 -->
+	<bean id="sqlSessionFactoryMeta" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceMeta" />
+		<property name="configLocation"
+			value="classpath:config/mysql/mybatis-config-meta.xml" />
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:sqlmapper/mysql/metamapper/**/*.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="sqlSessionMeta" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactoryMeta" />
+	</bean>
+	
+	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
+        <property name="algorithm" value="PBEWITHMD5ANDDES" />
+        <property name="password" value="GOOROOM_GPMS_PASS_KEY" />
+    </bean>  
+      
+    <bean id="configurationEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">  
+       <property name="config" ref="environmentVariablesConfiguration" />  
+    </bean>  
+	
+	<!-- org.springframework.jdbc.datasource.DataSourceTransactionManager -->
+	<bean id="transactionManagerMeta"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSourceMeta" />
+		</property>
+	</bean>
+	
+</beans>

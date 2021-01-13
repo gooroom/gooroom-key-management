@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CertificateDAO">
+
+	<select id="selectClientNameCount" parameterType="String" resultType="java.lang.Integer">
+		SELECT COUNT(*) CNT 
+		FROM CLIENT_MSTR WHERE CLIENT_ID = #{clientId}
+	</select>
+	
+	<select id="selectNextClinetNo" resultType="java.lang.Integer">
+		SELECT GRNEXTVAL('CLIENTID_SEQ') AS CLIENT_SEQ FROM DUAL
+	</select>
+	
+	<select id="selectRevokedClientBySerialNo" parameterType="map" resultType="java.lang.Integer">
+		SELECT COUNT(*) CNT 
+		FROM (
+			SELECT CM.CLIENT_ID FROM CLIENT_MSTR CM WHERE CM.SERIAL_NO = #{serialNo} AND CM.STATUS_CD != #{status}
+			UNION 
+			SELECT GM.GCSP_ID FROM GCSP_MSTR GM WHERE GM.SERIAL_NO = #{serialNo} AND GM.STATUS_CD != #{status}
+		) AA
+	</select>
+	
+	<insert id="insertCertificateInfo" parameterType="certificateVO">
+		INSERT INTO CLIENT_MSTR
+			(CLIENT_ID, CLIENT_NM, GRP_ID, CLIENT_OU, CERT_INFO, EXPIRATION_YMD, 
+			STATUS_CD, REG_DT, MOD_DT, REG_USER_ID, MOD_USER_ID, COMMENT, SERIAL_NO) 
+		VALUES (
+			#{clientCN},
+			#{clientName},
+			#{defaultClientGroupId},
+			#{clientOU},
+			#{certInfo},
+			#{expireDateSlim},
+			#{clientStatus},
+			now(),
+			now(),
+			#{regUserId},
+			#{regUserId},
+			#{comment},
+			#{serialNo}
+		);
+	</insert>
+
+	<update id="updateCertificateInfo" parameterType="certificateVO">
+		
+		UPDATE CLIENT_MSTR
+		SET CERT_INFO=#{certInfo}, 
+			CLIENT_NM=#{clientName},
+			<if test='defaultClientGroupId != null and defaultClientGroupId != ""'>
+				GRP_ID=#{defaultClientGroupId},
+			</if>
+		    EXPIRATION_YMD=#{expireDateSlim}, 
+			STATUS_CD=#{clientStatus}, 
+			MOD_DT=now(), 
+			MOD_USER_ID=#{regUserId}, 
+			COMMENT=#{comment},
+			SERIAL_NO=#{serialNo}
+		WHERE CLIENT_ID=#{clientCN}
+
+	</update>
+
+	<update id="updateCertificateAndNameInfo" parameterType="certificateVO">
+		
+		UPDATE CLIENT_MSTR
+		SET CERT_INFO=#{certInfo},
+			CLIENT_NM=#{clientName},
+			<if test='defaultClientGroupId != null and defaultClientGroupId != ""'>
+				GRP_ID=#{defaultClientGroupId},
+			</if>
+		    EXPIRATION_YMD=#{expireDateSlim},
+			STATUS_CD=#{clientStatus}, 
+			MOD_DT=now(), 
+			MOD_USER_ID=#{regUserId}, 
+			COMMENT=#{comment},
+			SERIAL_NO=#{serialNo}
+		WHERE CLIENT_ID=#{clientCN}
+
+	</update>
+
+	<insert id="insertCertificateInfoExt" parameterType="certificateVO">
+		INSERT INTO CLIENT_EXT
+			(CLIENT_ID, MOD_DT) 
+		VALUES (
+			#{clientCN},
+			now()
+		);
+	</insert>
+
+	<insert id="insertCertificateInfoHist" parameterType="certificateVO">
+		INSERT INTO CLIENT_MSTR_HIST
+			(HIST_SEQ, CLIENT_ID, CHG_TP, CLIENT_NM, GRP_ID, 
+			CLIENT_OU, CERT_INFO, EXPIRATION_YMD, STATUS_CD, REG_DT, 
+			MOD_DT, REG_USER_ID, MOD_USER_ID, COMMENT, SERIAL_NO)
+		VALUES (
+			(SELECT GRNEXTVAL('CLIENTMSTRHIST_SEQ')),
+			#{clientCN},
+			#{chgTp},
+			#{clientName},
+			#{defaultClientGroupId},
+			#{clientOU},
+			#{certInfo},
+			#{expireDateSlim},
+			#{clientStatus},
+			now(),
+			now(),
+			#{regUserId},
+			#{regUserId},
+			#{comment},
+			#{serialNo}
+		);
+	</insert>
+
+</mapper>

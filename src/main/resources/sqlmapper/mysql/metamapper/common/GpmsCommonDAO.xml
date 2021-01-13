@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="GpmsCommonDAO">
+
+	<resultMap type="serverAddrInfoVO" id="ServerAddrInfo">
+	
+		<result property="gkmIp" column="KM_IP" />
+		<result property="gkmUrl" column="KM_URL" />
+		
+		<result property="glmIp" column="LM_IP" />
+		<result property="glmUrl" column="LM_URL" />
+		
+		<result property="grmIp" column="RM_IP" />
+		<result property="grmUrl" column="RM_URL" />
+
+		<result property="gpmsIp" column="PM_IP" />
+		<result property="gpmsUrl" column="PM_URL" />
+
+		<result property="modifyDate" column="MOD_DT" />
+	
+	</resultMap>
+
+	<resultMap type="serverVersionVO" id="ServerVersionInfo">
+	
+		<result property="version" column="SERVER_VERSION" />
+	
+	</resultMap>
+	
+	<resultMap type="clientGroupIpInfoVO" id="clientGroupIpInfo">
+	
+		<result property="grpId" column="GRP_ID" />
+		<result property="regClientIp" column="REG_CLIENT_IP" />
+	
+	</resultMap>
+
+
+	<!-- 서버 정보(ip, url) 조회 -->
+	<select id="selectServerAddrInfo" resultMap="ServerAddrInfo">
+		SELECT IFNULL(KM_IP, '') AS KM_IP,
+		  IFNULL(LM_IP, '') AS LM_IP, 
+		  IFNULL(RM_IP, '') AS RM_IP, 
+		  IFNULL(PM_IP, '') AS PM_IP, 
+		  IFNULL(KM_URL, '') AS KM_URL, 
+		  IFNULL(LM_URL, '') AS LM_URL, 
+		  IFNULL(RM_URL, '') AS RM_URL, 
+		  IFNULL(PM_URL, '') AS PM_URL, 
+			MOD_DT, MOD_USER_ID
+		FROM MG_SERVER;
+	</select>
+	
+	<!-- 사이트버전 조회 -->
+	<select id="selectSiteVersion" parameterType="string" resultMap="ServerVersionInfo">
+		SELECT SERVER_VERSION FROM SITE_MSTR WHERE SITE_NAME=#{siteName};
+	</select>
+
+	<!-- 단말그룹 자동등록 IP 정보 조회 -->
+	<select id="selectClientGroupIpInfo" resultMap="clientGroupIpInfo">
+		SELECT GRP_ID, REG_CLIENT_IP FROM CLIENT_GRP_MSTR
+		WHERE REG_CLIENT_IP IS NOT NULL AND REG_CLIENT_IP != ''
+	</select>	
+
+</mapper>

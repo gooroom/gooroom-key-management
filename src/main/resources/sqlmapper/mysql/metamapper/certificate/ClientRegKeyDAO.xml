@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ClientRegKeyDAO">
+
+	<resultMap type="clientRegKeyVO" id="clientRegKeyInfo">
+	
+		<result property="regKeyNo" column="REGKEY_NO" />
+
+		<result property="validDate" column="VALID_DT" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+		<result property="expireDate" column="EXPIRE_DT" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+
+		<result property="ipRange" column="IP_RANGE"/>
+	
+		<result property="modDate" column="MOD_DT" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+		<result property="modUserId" column="MOD_USER_ID"/>
+	
+	</resultMap>
+
+
+	<!-- 등록키 관련 정보 조회 -->
+	<select id="selectRegistrationInfo" parameterType="map" resultMap="clientRegKeyInfo">
+		SELECT REGKEY_NO, VALID_DT, EXPIRE_DT, IP_RANGE, MOD_DT, MOD_USER_ID 
+		FROM CLIENT_REGKEY
+		WHERE REGKEY_NO=#{registKey}
+	</select>
+
+</mapper>
