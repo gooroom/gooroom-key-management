@@ -17,7 +17,8 @@
 		<typeAlias type="kr.gooroom.gpms.common.service.ServerVersionVO" alias="serverVersionVO" />
 
 		<typeAlias type="kr.gooroom.gpms.account.service.SessionVO" alias="sessionVO" />
-		
+
+		<typeAlias type="kr.gooroom.gpms.gkm.service.PtgrNonceVO" alias="ptgrNonceVO" />
 	</typeAliases>
 	
 	
