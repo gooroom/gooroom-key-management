@@ -168,12 +168,14 @@ public class PtgrRestController {
     }
 
     @PostMapping(value = "/cert")
-    public ResultVO verifyCert (@RequestBody  PtgrCertData certVO) throws  Exception {
+    public ResultVO verifyCert (@RequestBody PtgrCertData certVO) throws  Exception {
 
         Security.addProvider(new BouncyCastleProvider());
 
         ResultVO resultVO = new ResultVO();
 
+        logger.debug("Nonce [" + certVO.getSignedNonce() +"]");
+        logger.debug("Cert[" + certVO.getCert() +"]");
         if (certVO.getCert().isEmpty()) {
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL,  GPMSConstants.RSP_CODE_PTGR_FAIL_CERT, "Parameter Error"));
             return resultVO;
@@ -194,6 +196,7 @@ public class PtgrRestController {
                 stream.close();
                 pemParser.close();
                 resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL,  GPMSConstants.RSP_CODE_PTGR_FAIL_CERT, "Certificate parser error"));
+                logger.debug("Certificate parser error");
                 return resultVO;
             }
             holder = (X509CertificateHolder) readObject;
@@ -201,6 +204,7 @@ public class PtgrRestController {
             pemParser.close();
         }
         catch (Exception e) {
+            logger.debug(e.getMessage());
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL,  GPMSConstants.RSP_CODE_PTGR_FAIL_CERT, e.getMessage()));
             return resultVO;
         }
@@ -216,20 +220,24 @@ public class PtgrRestController {
         }
         catch(CertificateExpiredException e){   // 유효기간이 지난 경우 에러메시지
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL,  GPMSConstants.RSP_CODE_PTGR_FAIL_CERT_EXPIRED, e.getMessage()));
+            logger.debug(e.getMessage());
             return resultVO;
         }
         catch(CertificateNotYetValidException e){  // 유효기간이 아직 시작되지 않은 경우 에러메시지
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL,  GPMSConstants.RSP_CODE_PTGR_FAIL_CERT_EXPIRED, e.getMessage()));
+            logger.debug(e.getMessage());
             return resultVO;
         }
         catch (Exception e) {
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL,  GPMSConstants.RSP_CODE_PTGR_FAIL_CERT, e.getMessage()));
+            logger.debug(e.getMessage());
             return resultVO;
         }
         //서버키 확인
         CertificateUtils utils = new CertificateUtils();
         if (!utils.verifyServerCertificate(holder)) {
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL,  GPMSConstants.RSP_CODE_PTGR_FAIL_CERT, "Certificate Validation Error"));
+            logger.debug("Certificate Validation Error");
             return resultVO;
         }
 
@@ -266,7 +274,9 @@ public class PtgrRestController {
         Date nowDate = new Date();
         logger.debug("DB Nonce Time: " + baseDate.toString());
         logger.debug("Now Time: " + nowDate.toString());
+
         if (baseDate.before(nowDate)) {
+            logger.debug("Nonce value past its expiration date");
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.RSP_CODE_PTGR_FAIL_CERT_EXPIRED, "Nonce value past its expiration date"));
             return resultVO;
         }
@@ -275,19 +285,21 @@ public class PtgrRestController {
         String decryptNonce = "";
         try {
             PublicKey userPubKey = cert.getPublicKey();
-            byte[] byteEncrypted = Base64.getMimeDecoder().decode(certVO.getSignedNonce());
+            byte[] byteEncrypted = Base64.getDecoder().decode(certVO.getSignedNonce());
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, userPubKey);
             byte[] bytePlain = cipher.doFinal(byteEncrypted);
-            decryptNonce = new String(bytePlain, "utf-8").replaceAll("(\r\n|\r|\n|\n\r)", "");
+            decryptNonce = new String(bytePlain, "utf-8").trim();
         }
         catch (Exception e) {
+            logger.debug(e.getMessage());
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.RSP_CODE_PTGR_FAIL_CERT_SIGN_NONCE, e.getMessage()));
             return resultVO;
         }
-
         logger.debug("DecryptNonce : [" + decryptNonce + "]");
+
         if (!nonceVO.getNonce().equals(decryptNonce)) {
+            logger.debug("Nonce values do not match");
             resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.RSP_CODE_PTGR_FAIL_CERT_SIGN_NONCE, "Nonce values do not match"));
             return resultVO;
         }
