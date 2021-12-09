@@ -240,6 +240,9 @@ public class PtgrRestController {
             logger.debug("Certificate Validation Error");
             return resultVO;
         }
+        else {
+            logger.debug("Certificate Validation Success");
+        }
 
         //2.CN값 추출
         String strCertCN = "";
