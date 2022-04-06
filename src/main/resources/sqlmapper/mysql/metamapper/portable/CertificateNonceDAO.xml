@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ptgrNonceDAO">
+
+	<resultMap id="PtgrNonceMap" type="ptgrNonceVO" >
+		<result property="cn" column="cn"/>
+		<result property="nonce" column="nonce"/>
+		<result property="regDt" column="reg_dt"/>
+	</resultMap>
+
+    <select id="selectCertNonce" parameterType="map" resultMap="PtgrNonceMap">
+	    SELECT cn, nonce, reg_dt
+		FROM ptgr_cert_nonce
+		WHERE cn = #{cn}
+    </select>
+    
+    <insert id="insertCertNonce" parameterType="ptgrNonceVO">
+		INSERT
+		INTO ptgr_cert_nonce (cn, nonce, reg_dt)
+		VALUES (
+		    	#{cn},
+		        #{nonce},
+		       	SYSDATE()
+			   )
+		ON DUPLICATE KEY UPDATE
+			nonce = #{nonce}, reg_dt = SYSDATE()
+	</insert>
+</mapper>
+
+
+

@@ -85,4 +85,12 @@ public class GPMSConstants {
 
 	public static final String CTRL_CLIENT_GROUP_DEFAULT = "CGRPDEFAULT";
 
+	//Portable
+	public static final String RSP_CODE_PTGR_SUCCESS = "PCERT000";
+	public static final String RSP_CODE_PTGR_FAIL_NONCE = "PCERT001";
+	public static final String RSP_CODE_PTGR_FAIL_CERT = "PCERT002";
+	public static final String RSP_CODE_PTGR_FAIL_CERT_EXPIRED  = "PCERT003";
+	public static final String RSP_CODE_PTGR_FAIL_CERT_SIGN_NONCE = "PCERT004";
+
+	public static final String PORTABLE_SERVER_CERTFILE = prop.getProperty("gooroom.portable.certificate.file");
 }
