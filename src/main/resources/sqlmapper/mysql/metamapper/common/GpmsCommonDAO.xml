@@ -21,9 +21,10 @@
 	
 	</resultMap>
 
-	<resultMap type="serverVersionVO" id="ServerVersionInfo">
+	<resultMap type="serverBasicInfoVO" id="ServerBasicInfo">
 	
 		<result property="version" column="SERVER_VERSION" />
+		<result property="simpleClientCode" column="SITE_REG_CD" />
 	
 	</resultMap>
 	
@@ -49,9 +50,14 @@
 		FROM MG_SERVER;
 	</select>
 	
-	<!-- 사이트버전 조회 -->
-	<select id="selectSiteVersion" parameterType="string" resultMap="ServerVersionInfo">
+	<!-- 사이트버전 및 등록코드 조회 -->
+	<select id="selectSiteVersion" parameterType="string" resultMap="ServerBasicInfo">
 		SELECT SERVER_VERSION FROM SITE_MSTR WHERE SITE_NAME=#{siteName};
+	</select>
+
+	<!-- 사이트 등록 코드 조회 -->
+	<select id="selectSiteRegCode" parameterType="string" resultMap="ServerBasicInfo">
+		SELECT SITE_REG_CD FROM SITE_MSTR WHERE SITE_NAME=#{siteName};
 	</select>
 
 	<!-- 단말그룹 자동등록 IP 정보 조회 -->

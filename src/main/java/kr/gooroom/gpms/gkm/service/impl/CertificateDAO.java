@@ -32,7 +32,7 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	/**
 	 * 인증서 정보 등록
 	 * 
-	 * @param CertRequestVO
+	 * @param vo CertRequestVO
 	 * @return long result
 	 * @throws Exception
 	 */
@@ -49,7 +49,7 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	/**
 	 * 인증서 정보 수정(업데이트) - 인증서 변경
 	 * 
-	 * @param CertRequestVO
+	 * @param vo CertRequestVO
 	 * @return long result
 	 * @throws Exception
 	 */
@@ -62,7 +62,7 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	/**
 	 * 인증서 정보 수정(업데이트) - 인증서와 이름 변경
 	 * 
-	 * @param CertRequestVO
+	 * @param vo CertRequestVO
 	 * @return long result
 	 * @throws Exception
 	 */
@@ -75,7 +75,7 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	/**
 	 * 인증서 CN 중복 검사 - select count
 	 * 
-	 * @param CertRequestVO
+	 * @param cn String
 	 * @return boolean result
 	 * @throws Exception
 	 */
@@ -102,7 +102,7 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	/**
 	 * 인증서 CN 존재여부 검사 - select count
 	 * 
-	 * @param CertRequestVO
+	 * @param cn String
 	 * @return boolean result
 	 * @throws Exception
 	 */
@@ -127,9 +127,28 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	}
 
 	/**
+	 * 단말 간소화 ID 중복 검사
+	 *
+	 * @param cn String
+	 * @return boolean result
+	 * @throws Exception
+	 */
+	public String selectSimpleClientId(String cn) throws SQLException {
+
+		String simpleClientId = "";
+
+		try {
+			simpleClientId = sqlSessionMeta.selectOne("selectSimpleClientId", cn);
+		} catch (Exception ex) {
+			simpleClientId = "";
+		}
+
+		return simpleClientId;
+	}
+
+	/**
 	 * 단말기 번호 를 위한 시쿼스 조회
-	 * 
-	 * @param CertRequestVO
+	 *
 	 * @return long result
 	 * @throws Exception
 	 */
@@ -138,7 +157,7 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 		int re = -1;
 
 		try {
-			re = ((Integer) sqlSessionMeta.selectOne("selectNextClinetNo")).intValue();
+			re = ((Integer) sqlSessionMeta.selectOne("selectNextClientNo")).intValue();
 		} catch (Exception ex) {
 			re = -1;
 		}

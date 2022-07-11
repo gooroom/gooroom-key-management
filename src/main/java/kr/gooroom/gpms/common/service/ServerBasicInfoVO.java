@@ -19,9 +19,10 @@ package kr.gooroom.gpms.common.service;
 import java.io.Serializable;
 
 @SuppressWarnings("serial")
-public class ServerVersionVO implements Serializable {
+public class ServerBasicInfoVO implements Serializable {
 
 	private String version;
+	private String simpleClientCode;
 
 	public String getVersion() {
 		return version;
@@ -29,6 +30,14 @@ public class ServerVersionVO implements Serializable {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public String getSimpleClientCode() {
+		return simpleClientCode;
+	}
+
+	public void setSimpleClientCode(String simpleClientCode) {
+		this.simpleClientCode = simpleClientCode;
 	}
 
 }

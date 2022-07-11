@@ -8,7 +8,7 @@
 		FROM CLIENT_MSTR WHERE CLIENT_ID = #{clientId}
 	</select>
 	
-	<select id="selectNextClinetNo" resultType="java.lang.Integer">
+	<select id="selectNextClientNo" resultType="java.lang.Integer">
 		SELECT GRNEXTVAL('CLIENTID_SEQ') AS CLIENT_SEQ FROM DUAL
 	</select>
 	
@@ -20,13 +20,19 @@
 			SELECT GM.GCSP_ID FROM GCSP_MSTR GM WHERE GM.SERIAL_NO = #{serialNo} AND GM.STATUS_CD != #{status}
 		) AA
 	</select>
-	
+
+	<select id="selectSimpleClientId" parameterType="String" resultType="java.lang.String">
+		SELECT SIMPLE_CLIENT_ID
+		FROM CLIENT_MSTR WHERE CLIENT_ID = #{clientId}
+	</select>
+
 	<insert id="insertCertificateInfo" parameterType="certificateVO">
 		INSERT INTO CLIENT_MSTR
-			(CLIENT_ID, CLIENT_NM, GRP_ID, CLIENT_OU, CERT_INFO, EXPIRATION_YMD, 
+			(CLIENT_ID, SIMPLE_CLIENT_ID, CLIENT_NM, GRP_ID, CLIENT_OU, CERT_INFO, EXPIRATION_YMD,
 			STATUS_CD, REG_DT, MOD_DT, REG_USER_ID, MOD_USER_ID, COMMENT, SERIAL_NO) 
 		VALUES (
 			#{clientCN},
+			#{simpleClientId},
 			#{clientName},
 			#{defaultClientGroupId},
 			#{clientOU},
@@ -47,6 +53,7 @@
 		UPDATE CLIENT_MSTR
 		SET CERT_INFO=#{certInfo}, 
 			CLIENT_NM=#{clientName},
+			SIMPLE_CLIENT_ID=#{simpleClientId},
 			<if test='defaultClientGroupId != null and defaultClientGroupId != ""'>
 				GRP_ID=#{defaultClientGroupId},
 			</if>
@@ -64,6 +71,7 @@
 		
 		UPDATE CLIENT_MSTR
 		SET CERT_INFO=#{certInfo},
+		    SIMPLE_CLIENT_ID=#{simpleClientId},
 			CLIENT_NM=#{clientName},
 			<if test='defaultClientGroupId != null and defaultClientGroupId != ""'>
 				GRP_ID=#{defaultClientGroupId},
@@ -89,12 +97,13 @@
 
 	<insert id="insertCertificateInfoHist" parameterType="certificateVO">
 		INSERT INTO CLIENT_MSTR_HIST
-			(HIST_SEQ, CLIENT_ID, CHG_TP, CLIENT_NM, GRP_ID, 
+			(HIST_SEQ, CLIENT_ID, SIMPLE_CLIENT_ID, CHG_TP, CLIENT_NM, GRP_ID,
 			CLIENT_OU, CERT_INFO, EXPIRATION_YMD, STATUS_CD, REG_DT, 
 			MOD_DT, REG_USER_ID, MOD_USER_ID, COMMENT, SERIAL_NO)
 		VALUES (
 			(SELECT GRNEXTVAL('CLIENTMSTRHIST_SEQ')),
 			#{clientCN},
+			#{simpleClientId},
 			#{chgTp},
 			#{clientName},
 			#{defaultClientGroupId},

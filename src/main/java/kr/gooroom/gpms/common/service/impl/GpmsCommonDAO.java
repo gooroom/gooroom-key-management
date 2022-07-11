@@ -26,7 +26,7 @@ import org.springframework.stereotype.Repository;
 import kr.gooroom.gpms.common.GPMSConstants;
 import kr.gooroom.gpms.common.service.ClientGroupIpInfoVO;
 import kr.gooroom.gpms.common.service.ServerAddrInfoVO;
-import kr.gooroom.gpms.common.service.ServerVersionVO;
+import kr.gooroom.gpms.common.service.ServerBasicInfoVO;
 import kr.gooroom.gpms.common.service.dao.SqlSessionMetaDAO;
 import kr.gooroom.gpms.common.utils.MessageSourceHelper;
 
@@ -61,13 +61,32 @@ public class GpmsCommonDAO extends SqlSessionMetaDAO {
 	 * @return ServerVersion
 	 * @throws SQLException
 	 */
-	public ServerVersionVO selectSiteVersion() throws SQLException {
-		ServerVersionVO re = null;
+	public ServerBasicInfoVO selectSiteVersion() throws SQLException {
+		ServerBasicInfoVO re = null;
 		try {
 			re = sqlSessionMeta.selectOne("selectSiteVersion", GPMSConstants.SITE_NAME);
 		} catch (Exception ex) {
 			re = null;
 			logger.error("error in selectSiteVersion : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
+		}
+		return re;
+	}
+
+	/**
+	 * 서버 단말 아이디 등록 코드 조회
+	 *
+	 * @param
+	 * @return ServerVersion
+	 * @throws SQLException
+	 */
+	public ServerBasicInfoVO selectSiteRegCode() throws SQLException {
+		ServerBasicInfoVO re = null;
+		try {
+			re = sqlSessionMeta.selectOne("selectSiteRegCode", GPMSConstants.SITE_NAME);
+		} catch (Exception ex) {
+			re = null;
+			logger.error("error in selectSiteRegCode : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
 		}
 		return re;

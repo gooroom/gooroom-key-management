@@ -16,8 +16,6 @@
 
 package kr.gooroom.gpms.common.service.impl;
 
-import java.util.HashMap;
-
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
@@ -29,7 +27,7 @@ import kr.gooroom.gpms.common.service.CertForServerVO;
 import kr.gooroom.gpms.common.service.GpmsCommonService;
 import kr.gooroom.gpms.common.service.ResultVO;
 import kr.gooroom.gpms.common.service.ServerAddrInfoVO;
-import kr.gooroom.gpms.common.service.ServerVersionVO;
+import kr.gooroom.gpms.common.service.ServerBasicInfoVO;
 import kr.gooroom.gpms.common.service.StatusVO;
 import kr.gooroom.gpms.common.utils.MessageSourceHelper;
 import kr.gooroom.gpms.gkm.utils.CertificateUtils;
@@ -144,9 +142,9 @@ public class GpmsCommonServiceImpl implements GpmsCommonService {
 
 		try {
 
-			ServerVersionVO re = gpmsCommonDAO.selectSiteVersion();
+			ServerBasicInfoVO re = gpmsCommonDAO.selectSiteVersion();
 			if (re != null) {
-				ServerVersionVO[] row = new ServerVersionVO[1];
+				ServerBasicInfoVO[] row = new ServerBasicInfoVO[1];
 				row[0] = re;
 				resultVO.setData(row);
 				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_SUCCESS, GPMSConstants.CODE_SELECT,

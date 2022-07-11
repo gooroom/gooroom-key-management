@@ -123,8 +123,7 @@ public class GkmRestController {
 
 	/**
 	 * 단말 등록 요청 (CSR + 어드민 계정)
-	 * 
-	 * @param CertRequestVO paramVO
+	 *
 	 * @return ResultVO
 	 * @throws Exception
 	 */

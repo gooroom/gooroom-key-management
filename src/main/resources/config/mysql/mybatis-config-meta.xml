@@ -14,7 +14,7 @@
 		<typeAlias type="kr.gooroom.gpms.common.service.ClientGroupIpInfoVO" alias="clientGroupIpInfoVO" />
 		
 		<typeAlias type="kr.gooroom.gpms.common.service.ServerAddrInfoVO" alias="serverAddrInfoVO" />
-		<typeAlias type="kr.gooroom.gpms.common.service.ServerVersionVO" alias="serverVersionVO" />
+		<typeAlias type="kr.gooroom.gpms.common.service.ServerBasicInfoVO" alias="serverBasicInfoVO" />
 
 		<typeAlias type="kr.gooroom.gpms.account.service.SessionVO" alias="sessionVO" />
 

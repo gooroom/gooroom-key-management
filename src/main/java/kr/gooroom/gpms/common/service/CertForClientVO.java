@@ -28,6 +28,8 @@ public class CertForClientVO implements Serializable {
 
 	private String defaultClientGroupId;
 
+	private String simpleClientId;
+
 	private String expireDate;
 	private String expireDateSlim;
 
@@ -137,4 +139,11 @@ public class CertForClientVO implements Serializable {
 		this.expireDateSlim = expireDateSlim;
 	}
 
+	public String getSimpleClientId() {
+		return simpleClientId;
+	}
+
+	public void setSimpleClientId(String simpleClientId) {
+		this.simpleClientId = simpleClientId;
+	}
 }

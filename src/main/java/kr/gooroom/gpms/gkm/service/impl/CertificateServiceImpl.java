@@ -35,6 +35,7 @@ import java.util.UUID;
 
 import javax.annotation.Resource;
 
+import kr.gooroom.gpms.common.service.*;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.slf4j.Logger;
@@ -45,10 +46,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import kr.gooroom.gpms.common.GPMSConstants;
-import kr.gooroom.gpms.common.service.CertForClientVO;
-import kr.gooroom.gpms.common.service.ClientGroupIpInfoVO;
-import kr.gooroom.gpms.common.service.ResultVO;
-import kr.gooroom.gpms.common.service.StatusVO;
 import kr.gooroom.gpms.common.service.impl.GpmsCommonDAO;
 import kr.gooroom.gpms.common.utils.AutoGroupSelector;
 import kr.gooroom.gpms.common.utils.MessageSourceHelper;
@@ -72,7 +69,7 @@ public class CertificateServiceImpl implements CertificateService {
 	/**
 	 * 인증 요청서에 사인하여 인증서 생성 - 데이터 생성
 	 * 
-	 * @param CertRequestVO
+	 * @param vo CertRequestVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
@@ -141,6 +138,11 @@ public class CertificateServiceImpl implements CertificateService {
 						certificateVO.setDefaultClientGroupId(GPMSConstants.CTRL_CLIENT_GROUP_DEFAULT);
 					}
 
+					// 신규 단말 간소화 ID 저장
+					ServerBasicInfoVO serverBasicInfoVO = gpmsCommonDAO.selectSiteRegCode();
+					certificateVO.setSimpleClientId(serverBasicInfoVO.getSimpleClientCode()
+							+ String.format("%05d", certificateDao.selectNextClientNo()));
+
 					certificateVO.setExpireDate(sdf.format(vo.getExpireDate()));
 					certificateVO.setClientStatus(GPMSConstants.STS_USABLE);
 					certificateVO.setRegUserId(vo.getAdminUserId());
@@ -199,7 +201,7 @@ public class CertificateServiceImpl implements CertificateService {
 	/**
 	 * 인증 요청서에 사인하여 인증서 갱신 - 데이터 갱신
 	 * 
-	 * @param CertRequestVO
+	 * @param vo CertRequestVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
@@ -252,36 +254,34 @@ public class CertificateServiceImpl implements CertificateService {
 			certPem = sw.toString();
 
 			if (certPem != null && !"".equals(certPem) && certPem.length() > 0) {
+				// 단말그룹의 자동등록 IP 조사
+				List<ClientGroupIpInfoVO> ipRe = gpmsCommonDAO.selectClientGroupIpInfo();
+				AutoGroupSelector ags = new AutoGroupSelector(ipRe);
+				String defaultGrpId = "";
+				if(!vo.getIpv4().equals("")) {
+					defaultGrpId = ags.getClientGroupId(vo.getIpv4());
+				}
+				if(!vo.getIpv6().equals("")) {
+					defaultGrpId = ags.getClientGroupId(vo.getIpv6());
+				}
 
 				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_SUCCESS, GPMSConstants.CODE_INSERT,
 						MessageSourceHelper.getMessage("client.result.creatcertificate")));
 
 				// 인증서 오브젝트 생성
 				CertForClientVO certificateVO = new CertForClientVO();
-
 				certificateVO.setClientCN(vo.getCn());
 				certificateVO.setClientName(vo.getName());
 				certificateVO.setCertInfo(certPem);
-				
-				if (isExist) {
-					// 단말그룹의 자동등록 IP 조사
-					List<ClientGroupIpInfoVO> ipRe = gpmsCommonDAO.selectClientGroupIpInfo();
-					AutoGroupSelector ags = new AutoGroupSelector(ipRe);
-					String defaultGrpId = "";
-					if(!vo.getIpv4().equals("")) {
-						defaultGrpId = ags.getClientGroupId(vo.getIpv4());
-					}
-					if(!vo.getIpv6().equals("")) {
-						defaultGrpId = ags.getClientGroupId(vo.getIpv6());
-					}
 
-
-					if(defaultGrpId != null && !"".equals(defaultGrpId)) {
-						certificateVO.setDefaultClientGroupId(defaultGrpId);
-					} else {
-						certificateVO.setDefaultClientGroupId(GPMSConstants.CTRL_CLIENT_GROUP_DEFAULT);
-					}
+				if(defaultGrpId != null && !"".equals(defaultGrpId)) {
+					certificateVO.setDefaultClientGroupId(defaultGrpId);
+				} else {
+					certificateVO.setDefaultClientGroupId(GPMSConstants.CTRL_CLIENT_GROUP_DEFAULT);
 				}
+
+				// 기존 단말 간소화 ID 저장필요
+				certificateVO.setSimpleClientId(certificateDao.selectSimpleClientId(vo.getCn()));
 
 				certificateVO.setExpireDate(sdf.format(vo.getExpireDate()));
 				certificateVO.setClientStatus(GPMSConstants.STS_USABLE);
@@ -334,7 +334,7 @@ public class CertificateServiceImpl implements CertificateService {
 	/**
 	 * 인증 요청서에 사인하여 인증서 생성 - 데이터 생성
 	 * 
-	 * @param CertRequestVO
+	 * @param vo CertRequestVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
@@ -371,34 +371,39 @@ public class CertificateServiceImpl implements CertificateService {
 			certPem = sw.toString();
 
 			if (certPem != null && !"".equals(certPem) && certPem.length() > 0) {
+				// 단말그룹의 자동등록 IP 조사
+				List<ClientGroupIpInfoVO> ipRe = gpmsCommonDAO.selectClientGroupIpInfo();
+				AutoGroupSelector ags = new AutoGroupSelector(ipRe);
+				String defaultGrpId = "";
+				if(!vo.getIpv4().equals("")) {
+					defaultGrpId = ags.getClientGroupId(vo.getIpv4());
+				}
+				if(!vo.getIpv6().equals("")) {
+					defaultGrpId = ags.getClientGroupId(vo.getIpv6());
+				}
 
 				// 인증서 오브젝트 생성
 				CertForClientVO certificateVO = new CertForClientVO();
-
 				certificateVO.setClientCN(vo.getCn());
 				certificateVO.setClientName(vo.getName());
 				certificateVO.setClientOU(vo.getOu());
 				certificateVO.setCertInfo(certPem);
-				
-				if (isExist) {
-					// 단말그룹의 자동등록 IP 조사
-					List<ClientGroupIpInfoVO> ipRe = gpmsCommonDAO.selectClientGroupIpInfo();
-					AutoGroupSelector ags = new AutoGroupSelector(ipRe);
-					String defaultGrpId = "";
-					if(!vo.getIpv4().equals("")) {
-						defaultGrpId = ags.getClientGroupId(vo.getIpv4());
-					}
-					if(!vo.getIpv6().equals("")) {
-						defaultGrpId = ags.getClientGroupId(vo.getIpv6());
-					}
 
-					if(defaultGrpId != null && !"".equals(defaultGrpId)) {
-						certificateVO.setDefaultClientGroupId(defaultGrpId);
-					} else {
-						certificateVO.setDefaultClientGroupId(GPMSConstants.CTRL_CLIENT_GROUP_DEFAULT);
-					}
+				if(defaultGrpId != null && !"".equals(defaultGrpId)) {
+					certificateVO.setDefaultClientGroupId(defaultGrpId);
 				} else {
 					certificateVO.setDefaultClientGroupId(GPMSConstants.CTRL_CLIENT_GROUP_DEFAULT);
+				}
+				
+				if (isExist) {
+					// 기존 단말 간소화 ID 저장필요
+					certificateVO.setSimpleClientId(certificateDao.selectSimpleClientId(vo.getCn()));
+
+				} else {
+					// 신규 단말 간소화 ID 저장
+					ServerBasicInfoVO serverBasicInfoVO = gpmsCommonDAO.selectSiteRegCode();
+					certificateVO.setSimpleClientId(serverBasicInfoVO.getSimpleClientCode()
+							+ String.format("%05d", certificateDao.selectNextClientNo()));
 				}
 
 				certificateVO.setExpireDate(sdf.format(vo.getExpireDate()));
