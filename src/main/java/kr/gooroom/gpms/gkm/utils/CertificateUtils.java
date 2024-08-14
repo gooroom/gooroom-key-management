@@ -26,13 +26,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Security;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -72,6 +66,8 @@ import org.bouncycastle.util.io.pem.PemWriter;
 
 import kr.gooroom.gpms.common.GPMSConstants;
 import kr.gooroom.gpms.common.service.CertForServerVO;
+import org.springframework.security.crypto.codec.Hex;
+import org.springframework.security.crypto.codec.Utf8;
 
 public class CertificateUtils {
 
@@ -342,4 +338,9 @@ public class CertificateUtils {
 		return certificateVO;
 	}
 
+	public String sha256Encrypt(String text) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		byte[] digest = md.digest(Utf8.encode(text));
+		return new String (Hex.encode(digest));
+	}
 }

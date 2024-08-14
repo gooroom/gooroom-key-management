@@ -38,14 +38,14 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import javax.crypto.Cipher;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -119,12 +119,11 @@ public class PtgrRestController {
             cal.add(Calendar.DATE, 10);
             Date yearFromNow = cal.getTime();
 
-            ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
-            String hashPw = encoder.encodePassword(pw, null);
-            String hashPw1 = encoder.encodePassword(cn + hashPw, null);
-            String password = encoder.encodePassword(hashPw1, null);
-
             CertificateUtils utils = new CertificateUtils();
+            String hashPw = utils.sha256Encrypt(pw);
+            String hashPw1 = utils.sha256Encrypt(cn + hashPw);
+            String password = utils.sha256Encrypt(hashPw1);
+
             certVo = utils.createGcspCertificate(cn, yearFromNow, new BigInteger(64, new SecureRandom()), password);
        }
         catch (Exception e) {

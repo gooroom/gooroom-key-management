@@ -16,7 +16,7 @@
 
 package kr.gooroom.gpms.common.service.impl;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

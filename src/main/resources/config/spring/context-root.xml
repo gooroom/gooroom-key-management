@@ -4,7 +4,7 @@
 	
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 	<!-- Root Context: defines shared resources visible to all other web components -->
 
@@ -48,17 +48,16 @@
     </bean>
 
 	<!-- Meta DataSource Configuration -->
-	<bean id="dataSourceMeta" class="org.apache.commons.dbcp.BasicDataSource"
-		destroy-method="close">
+	<bean id="dataSourceMeta" class="org.apache.commons.dbcp2.BasicDataSource"
+		  destroy-method="close">
 		<property name="driverClassName" value="${metadb.driverClassName}" />
 		<property name="url" value="${metadb.url}" />
 		<property name="username" value="${metadb.username}" />
 		<property name="password" value="${metadb.password}" />
 		<property name="initialSize" value="${metadb.initialSize}" />
-		<property name="maxActive" value="${metadb.maxActive}" />
+		<property name="maxTotal" value="${metadb.maxActive}" />
 		<property name="maxIdle" value="${metadb.maxIdle}" />
 		<property name="minIdle" value="${metadb.minIdle}" />
-		<property name="maxWait" value="${metadb.maxWait}" />
 		<property name="poolPreparedStatements" value="true"></property>
 		<property name="maxOpenPreparedStatements" value="50"></property>
 		<property name="validationQuery" value="select 1" ></property>
