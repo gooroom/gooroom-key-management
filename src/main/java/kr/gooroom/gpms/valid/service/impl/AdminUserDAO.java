@@ -16,17 +16,15 @@
 
 package kr.gooroom.gpms.valid.service.impl;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Repository;
-
 import kr.gooroom.gpms.common.GPMSConstants;
 import kr.gooroom.gpms.common.service.dao.SqlSessionMetaDAO;
 import kr.gooroom.gpms.common.utils.MessageSourceHelper;
 import kr.gooroom.gpms.valid.service.AdminUserVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
+
+import java.util.HashMap;
 
 /**
  * data access object class for administrator user management process.
@@ -46,18 +44,14 @@ public class AdminUserDAO extends SqlSessionMetaDAO {
 	 * authority.
 	 * 
 	 * @param adminId string administrator user id
-	 * @param adminPw string administrator user password
 	 * @return AdminUserVO List
-	 * @throws SQLException
 	 */
-	public AdminUserVO selectAdminUserAuthAndInfo(String adminId, String adminPw) throws SQLException {
+	public AdminUserVO selectAdminUserAuthAndInfo(String adminId) {
 
-		AdminUserVO re = null;
+		AdminUserVO re;
 		try {
-			HashMap<String, String> map = new HashMap<String, String>();
+			HashMap<String, String> map = new HashMap<>();
 			map.put("adminId", adminId);
-			map.put("adminPw", adminPw);
-
 			re = sqlSessionMeta.selectOne("selectAdminUserAuthAndInfo", map);
 
 		} catch (Exception ex) {

@@ -1,21 +1,18 @@
 package kr.gooroom.gpms.common.utils;
 
+import kr.gooroom.gpms.common.service.ClientGroupIpInfoVO;
+
 import java.math.BigInteger;
-import java.net.InetAddress;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import kr.gooroom.gpms.common.service.ClientGroupIpInfoVO;
-import org.bouncycastle.util.IPAddress;
-import org.springframework.security.web.util.matcher.IpAddressMatcher;
-
 public class AutoGroupSelector {
 
-	private static String regexIPv4 = "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$";
-	private static String regexIPv6 = "^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$";
-	private static String regexIPv4andIPv6 = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$";
+	private static final String regexIPv4 = "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$";
+	private static final String regexIPv6 = "^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$";
+	private static final String regexIPv4andIPv6 = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$";
 
-	private List<ClientGroupIpInfoVO> data = null;
+	private final List<ClientGroupIpInfoVO> data;
 
 	public AutoGroupSelector(List<ClientGroupIpInfoVO> data) {
 		this.data = data;
@@ -26,19 +23,19 @@ public class AutoGroupSelector {
 		String ipVersion = "";
 		Pattern pattern;
 		pattern = Pattern.compile(regexIPv4andIPv6);
-		if (ipStr == null || pattern.matcher(ipStr).matches() == false) {
+		if (ipStr == null || !pattern.matcher(ipStr).matches()) {
 			System.out.println("유효하지 않은 IP 주소입니다.");
 
 		} else {
 			// IPv4
 			pattern = Pattern.compile(regexIPv4);
-			if (pattern.matcher(ipStr).matches() == true) {
+			if (pattern.matcher(ipStr).matches()) {
 				ipVersion = "IPv4";
 			}
 
 			// IPv6
 			pattern = Pattern.compile(regexIPv6);
-			if (pattern.matcher(ipStr).matches() == true) {
+			if (pattern.matcher(ipStr).matches()) {
 				ipVersion = "IPv6";
 			}
 		}
@@ -125,7 +122,7 @@ public class AutoGroupSelector {
 									if (from <= Long.parseLong(ip) && to >= Long.parseLong(ip)) {
 										return vo.getGrpId();
 									}
-								} catch (Exception eex) {
+								} catch (Exception ignored) {
 								}
 							} else if("IPv6".equals(checkIpVersion(ipStr))) {
 								try {
@@ -136,7 +133,7 @@ public class AutoGroupSelector {
 											(target.compareTo(from) == 1 && target.compareTo(to) == -1)) {
 										return vo.getGrpId();
 									}
-								} catch (Exception eex) {
+								} catch (Exception ignored) {
 								}
 							}
 						}
@@ -150,7 +147,7 @@ public class AutoGroupSelector {
 									if (from <= Long.parseLong(ip) && to >= Long.parseLong(ip)) {
 										return vo.getGrpId();
 									}
-								} catch (Exception eex) {
+								} catch (Exception ignored) {
 								}
 							} else if("IPv6".equals(checkIpVersion(ipStr))) {
 								try {
@@ -161,7 +158,7 @@ public class AutoGroupSelector {
 											(target.compareTo(from) == 1 && target.compareTo(to) == -1)) {
 										return vo.getGrpId();
 									}
-								} catch (Exception eex) {
+								} catch (Exception ignored) {
 								}
 							}
 						}

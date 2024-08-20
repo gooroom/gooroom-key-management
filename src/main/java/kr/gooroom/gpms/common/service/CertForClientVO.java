@@ -16,11 +16,13 @@
 
 package kr.gooroom.gpms.common.service;
 
+import java.io.Serial;
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
 public class CertForClientVO implements Serializable {
 
+	@Serial
+	private static final long serialVersionUID = -754121989056051797L;
 	private String certInfo;
 	private String clientCN;
 	private String clientName;
@@ -70,7 +72,7 @@ public class CertForClientVO implements Serializable {
 
 	public void setExpireDate(String expireDate) {
 		this.expireDate = expireDate;
-		if (expireDate != null && expireDate.indexOf("-") > -1) {
+		if (expireDate != null && expireDate.contains("-")) {
 			this.expireDateSlim = expireDate.replaceAll("-", "");
 		}
 	}

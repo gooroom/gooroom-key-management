@@ -16,12 +16,14 @@
 
 package kr.gooroom.gpms.valid.service;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-@SuppressWarnings("serial")
 public class AdminUserVO implements Serializable {
 
+	@Serial
+	private static final long serialVersionUID = 8689743280719836453L;
 	private String adminId;
 	private String adminNm;
 

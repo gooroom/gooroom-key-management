@@ -33,9 +33,8 @@ public class PtgrNonceDAO extends SqlSessionMetaDAO {
      * 인증서 난수값 업데이트
      * @param ptgrNonceVO
      * @return
-     * @throws Exception
      */
-    public int insertCertNonce (PtgrNonceVO ptgrNonceVO) throws Exception {
+    public int insertCertNonce (PtgrNonceVO ptgrNonceVO) {
 	return sqlSessionMeta.insert("ptgrNonceDAO.insertCertNonce", ptgrNonceVO);
     }
 
@@ -44,9 +43,8 @@ public class PtgrNonceDAO extends SqlSessionMetaDAO {
      * 
      * @param paramMap
      * @return
-     * @throws Exception
      */
-    public PtgrNonceVO selectCertNonce (Map<?,?> paramMap) throws Exception {
+    public PtgrNonceVO selectCertNonce (Map<?,?> paramMap) {
 	return sqlSessionMeta.selectOne("ptgrNonceDAO.selectCertNonce", paramMap);
     }
 }

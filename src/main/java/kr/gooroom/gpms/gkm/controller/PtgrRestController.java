@@ -70,10 +70,10 @@ public class PtgrRestController {
     private PtgrNonceService ptgrNonceService;
 
     @RequestMapping(value = "/cert", method = { RequestMethod.GET})
-    public ResultVO createCert (@RequestParam(value = "cn", required = true) String cn,
-                                @RequestParam(value = "pw", required = true) String pw,
+    public ResultVO createCert (@RequestParam(value = "cn") String cn,
+                                @RequestParam(value = "pw") String pw,
                                 HttpServletRequest req,
-                                HttpServletResponse res, ModelMap model) throws Exception {
+                                HttpServletResponse res, ModelMap model) {
 
         Security.addProvider(new BouncyCastleProvider());
 
@@ -88,7 +88,7 @@ public class PtgrRestController {
             CertificateUtils utils = new CertificateUtils();
             CertificateVO certVo = utils.createGcspCertificate(cn, yearFromNow, new BigInteger(64, new SecureRandom()), pw);
 
-            Map<String, Object> resultData = new HashMap<String, Object>();
+            Map<String, Object> resultData = new HashMap<>();
             resultData.put("cert", certVo.getCertificatePem());
             resultData.put("private", certVo.getPrivateKeyPem());
             Object[] objects = { resultData };
@@ -105,14 +105,14 @@ public class PtgrRestController {
     }
 
     @RequestMapping(value = "/certfile", method = { RequestMethod.GET})
-    public @ResponseBody ResponseEntity<FileSystemResource>  getCreateCert (@RequestParam(value = "cn", required = true) String cn,
-                                                                            @RequestParam(value = "pw", required = true) String pw,
+    public @ResponseBody ResponseEntity<FileSystemResource>  getCreateCert (@RequestParam(value = "cn") String cn,
+                                                                            @RequestParam(value = "pw") String pw,
                                                                             HttpServletRequest req,
                                                                             HttpServletResponse res, ModelMap model) throws Exception {
 
         Security.addProvider(new BouncyCastleProvider());
 
-        CertificateVO certVo = null;
+        CertificateVO certVo;
         try {
             Calendar cal = Calendar.getInstance();
             cal.setTime(new Date());
@@ -135,15 +135,15 @@ public class PtgrRestController {
         HttpHeaders header = new HttpHeaders();
         header.set("Content-Type", "application/zip");
         header.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=cert.zip");
-        return new ResponseEntity<FileSystemResource>(new FileSystemResource(GPMSConstants.PORTABLE_SERVER_CERTFILE), header, HttpStatus.OK);
+        return new ResponseEntity<>(new FileSystemResource(GPMSConstants.PORTABLE_SERVER_CERTFILE), header, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/nonce", method = { RequestMethod.POST })
     public ResultVO getNonce (@RequestBody PtgrNonceData cnData, HttpServletRequest req,
-                              HttpServletResponse res, ModelMap model) throws Exception {
+                              HttpServletResponse res, ModelMap model) {
 
         ResultVO resultVO = new ResultVO();
-        Map<String, Object> resultData = new HashMap<String, Object>();
+        Map<String, Object> resultData = new HashMap<>();
 
         try {
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
@@ -184,11 +184,11 @@ public class PtgrRestController {
         byte[] decodeCert = Base64.getDecoder().decode(strCert);
         strCert = new String(decodeCert);
 
-        Object readObject = null;
-        X509CertificateHolder holder = null;
+        Object readObject;
+        X509CertificateHolder holder;
 
         try {
-            InputStream stream = new ByteArrayInputStream(strCert.getBytes("UTF-8"));
+            InputStream stream = new ByteArrayInputStream(strCert.getBytes(StandardCharsets.UTF_8));
             PEMParser pemParser = new PEMParser(new InputStreamReader(stream));
             readObject = pemParser.readObject();
             if (!(readObject instanceof X509CertificateHolder))  {
@@ -208,7 +208,7 @@ public class PtgrRestController {
             return resultVO;
         }
 
-        X509Certificate cert = null;
+        X509Certificate cert;
 
         //1.인증서 유호셩 검사
         //유효기간
@@ -244,7 +244,7 @@ public class PtgrRestController {
         }
 
         //2.CN값 추출
-        String strCertCN = "";
+        String strCertCN;
         try {
             X500Name x500name = holder.getSubject();
             RDN cn = x500name.getRDNs(BCStyle.CN)[0];
@@ -275,7 +275,7 @@ public class PtgrRestController {
 
         Date nowDate = new Date();
         logger.debug("DB Nonce Time: " + baseDate.toString());
-        logger.debug("Now Time: " + nowDate.toString());
+        logger.debug("Now Time: " + nowDate);
 
         if (baseDate.before(nowDate)) {
             logger.debug("Nonce value past its expiration date");
@@ -284,14 +284,14 @@ public class PtgrRestController {
         }
 
         //4.Nonce 값 비교
-        String decryptNonce = "";
+        String decryptNonce;
         try {
             PublicKey userPubKey = cert.getPublicKey();
             byte[] byteEncrypted = Base64.getDecoder().decode(certVO.getSignedNonce());
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, userPubKey);
             byte[] bytePlain = cipher.doFinal(byteEncrypted);
-            decryptNonce = new String(bytePlain, "utf-8").trim();
+            decryptNonce = new String(bytePlain, StandardCharsets.UTF_8).trim();
         }
         catch (Exception e) {
             logger.debug(e.getMessage());
@@ -306,7 +306,7 @@ public class PtgrRestController {
             return resultVO;
         }
 
-        Map<String, Object> resultData = new HashMap<String, Object>();
+        Map<String, Object> resultData = new HashMap<>();
         resultData.put("userId", strCertCN);
         Object[] o = {resultData};
         resultVO.setData(o);

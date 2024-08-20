@@ -16,24 +16,8 @@
 
 package kr.gooroom.gpms.gkm.controller.factory;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.KeyFactory;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-
+import kr.gooroom.gpms.common.GPMSConstants;
+import kr.gooroom.gpms.gkm.controller.data.OCSPCertificate;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.operator.ContentSigner;
@@ -42,8 +26,14 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
-import kr.gooroom.gpms.common.GPMSConstants;
-import kr.gooroom.gpms.gkm.controller.data.OCSPCertificate;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 
 public class OCSPCertificateFactory {
 
@@ -53,7 +43,7 @@ public class OCSPCertificateFactory {
 			+ GPMSConstants.ROOT_CERTFILENAME;
 
 	public static OCSPCertificate getOCSPCertificate()
-			throws FileNotFoundException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+			throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
 		OCSPCertificate retour = new OCSPCertificate();
 		X509Certificate caOcsp;
 		X509CertificateHolder[] caOcspHolder = new X509CertificateHolder[1];
@@ -79,11 +69,11 @@ public class OCSPCertificateFactory {
 	}
 
 	private static PrivateKey readPrivateKey(String path)
-			throws FileNotFoundException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+			throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
 
 		File privKeyFile = new File(path);
 		// PemReader pemReader = new PemReader(new FileReader(privKeyFile));
-		PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(privKeyFile), "UTF-8"));
+		PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(privKeyFile), StandardCharsets.UTF_8));
 		PemObject pemObject = pemReader.readPemObject();
 		pemReader.close();
 		byte[] privKeyBytes = pemObject.getContent();
@@ -93,8 +83,7 @@ public class OCSPCertificateFactory {
 		return rootPriKey;
 	}
 
-	private static X509Certificate readCertificate(String keyFileClassPath) throws IOException, KeyStoreException,
-			NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
+	private static X509Certificate readCertificate(String keyFileClassPath) throws IOException, CertificateException {
 		InputStream fis = null;
 		ByteArrayInputStream bais = null;
 		try {

@@ -20,6 +20,8 @@ import jakarta.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import kr.gooroom.gpms.common.GPMSConstants;
@@ -40,7 +42,6 @@ import kr.gooroom.gpms.valid.service.ClientValidService;
  * @version 1.0
  * @see
  * 
- * 		Copyright (C) All right reserved.
  */
 
 @Service("adminUserService")
@@ -54,46 +55,46 @@ public class ClientValidServiceImpl implements ClientValidService {
 	@Resource(name = "registrationDataDAO")
 	private ClientRegKeyDAO registrationDataDao;
 
+	@Autowired
+	private Pbkdf2PasswordEncoder passwordEncoder;
+
 	/**
 	 * get administrator user information data by user id and password.
 	 * 
 	 * @param adminId string user id
 	 * @param adminPw string user password
 	 * @return ResultVO result data bean
-	 * @throws Exception
 	 */
 	@Override
-	public ResultVO getAdminUserAuthAndInfo(String adminId, String adminPw) throws Exception {
+	public ResultVO getAdminUserAuthAndInfo(String adminId, String adminPw) {
 
 		ResultVO resultVO = new ResultVO();
 
 		try {
 
-			AdminUserVO re = adminUserDao.selectAdminUserAuthAndInfo(adminId, adminPw);
+			AdminUserVO re = adminUserDao.selectAdminUserAuthAndInfo(adminId);
 
 			if (re != null) {
-
-				AdminUserVO[] row = new AdminUserVO[1];
-				row[0] = re;
-				resultVO.setData(row);
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_SUCCESS, GPMSConstants.CODE_SELECT,
-						MessageSourceHelper.getMessage("system.common.selectdata")));
-
-			} else {
-
-				Object[] o = new Object[0];
-				resultVO.setData(o);
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SELECTERROR,
-						MessageSourceHelper.getMessage("system.common.adminerror")));
+				if (passwordEncoder.matches(adminPw, re.getAdminPw())) {
+					AdminUserVO[] row = new AdminUserVO[1];
+					row[0] = re;
+					resultVO.setData(row);
+					resultVO.setStatus(new StatusVO(GPMSConstants.MSG_SUCCESS, GPMSConstants.CODE_SELECT,
+							MessageSourceHelper.getMessage("system.common.selectdata")));
+					return resultVO;
+				}
 			}
+
+			Object[] o = new Object[0];
+			resultVO.setData(o);
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SELECTERROR,
+					MessageSourceHelper.getMessage("system.common.adminerror")));
 
 		} catch (Exception ex) {
 			logger.error("error in getAdminUserAuthAndInfo : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 		}
 
 		return resultVO;
@@ -104,10 +105,9 @@ public class ClientValidServiceImpl implements ClientValidService {
 	 * 
 	 * @param registKey string regist-key
 	 * @return ResultVO result data bean
-	 * @throws Exception
 	 */
 	@Override
-	public ResultVO getRegistInfoForKey(String registKey) throws Exception {
+	public ResultVO getRegistInfoForKey(String registKey) {
 
 		ResultVO resultVO = new ResultVO();
 
@@ -134,10 +134,8 @@ public class ClientValidServiceImpl implements ClientValidService {
 		} catch (Exception ex) {
 			logger.error("error in getAdminUserAuthAndInfo : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 		}
 
 		return resultVO;

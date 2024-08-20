@@ -16,11 +16,13 @@
 
 package kr.gooroom.gpms.common.service;
 
+import java.io.Serial;
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
 public class ServerBasicInfoVO implements Serializable {
 
+	@Serial
+	private static final long serialVersionUID = 7082618950635366273L;
 	private String version;
 	private String simpleClientCode;
 

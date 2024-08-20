@@ -31,14 +31,14 @@ public class PtgrNonceServiceImpl implements PtgrNonceService {
 	private PtgrNonceDAO ptgrNonceDAO;
 
 	@Override
-	public PtgrNonceVO selectCertNonceByCN(String cn) throws Exception {
-		Map<String, Object> paramMap = new HashMap<String, Object>();
+	public PtgrNonceVO selectCertNonceByCN(String cn) {
+		Map<String, Object> paramMap = new HashMap<>();
 		paramMap.put("cn", cn);
 		return ptgrNonceDAO.selectCertNonce(paramMap);
 	}
 
 	@Override
-	public int insertCentNonce(PtgrNonceVO ptgrNonceVO) throws Exception {
+	public int insertCentNonce(PtgrNonceVO ptgrNonceVO) {
 		return ptgrNonceDAO.insertCertNonce(ptgrNonceVO);
 	}
 }

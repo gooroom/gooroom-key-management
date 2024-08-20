@@ -87,8 +87,6 @@ public class GkmRestController {
 			resultVO = gpmsCommonService.getGpmsServersCertificate();
 
 		} catch (Exception ex) {
-
-			resultVO = null;
 			logger.error("error in getServerCert : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
 		}
@@ -112,8 +110,6 @@ public class GkmRestController {
 			resultVO = gpmsCommonService.getGpmsServerVersion();
 
 		} catch (Exception ex) {
-
-			resultVO = null;
 			logger.error("error in getServerVersion : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
 		}
@@ -128,15 +124,15 @@ public class GkmRestController {
 	 * @throws Exception
 	 */
 	@PostMapping("/v1/client/register")
-	public ResultVO getCertificate(@RequestParam(value = "csr", required = true, defaultValue = "") String csr,
+	public ResultVO getCertificate(@RequestParam(value = "csr", defaultValue = "") String csr,
 			@RequestParam(value = "valid_date", required = false, defaultValue = "") String valid_date,
 			@RequestParam(value = "ou", required = false, defaultValue = "") String ou,
 			@RequestParam(value = "comment", required = false, defaultValue = "") String comment,
-			@RequestParam(value = "cn", required = true, defaultValue = "") String cn,
-			@RequestParam(value = "ipv4", required = true, defaultValue = "") String ipv4,
-            @RequestParam(value = "ipv6", required = true, defaultValue = "") String ipv6,
-			@RequestParam(value = "user_id", required = true, defaultValue = "") String user_id,
-			@RequestParam(value = "user_pw", required = true, defaultValue = "") String user_pw) {
+			@RequestParam(value = "cn", defaultValue = "") String cn,
+			@RequestParam(value = "ipv4", defaultValue = "") String ipv4,
+            @RequestParam(value = "ipv6", defaultValue = "") String ipv6,
+			@RequestParam(value = "user_id", defaultValue = "") String user_id,
+			@RequestParam(value = "user_pw", defaultValue = "") String user_pw) {
 
 		ResultVO resultVO = new ResultVO();
 
@@ -195,10 +191,8 @@ public class GkmRestController {
 						logger.error("error in getCertificate(createCertificate) : {}, {}, {}",
 								GPMSConstants.CODE_SYSERROR, MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR),
 								ex.toString());
-						if (resultVO != null) {
-							resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-									MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-						}
+						resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+								MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 					}
 				} else {
 					resultVO = authRe;
@@ -208,10 +202,8 @@ public class GkmRestController {
 
 				logger.error("error in getCertificate : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-				if (resultVO != null) {
-					resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-							MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-				}
+				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			}
 
 			return resultVO;
@@ -221,7 +213,6 @@ public class GkmRestController {
 	/**
 	 * GPMS 서버정보제공
 	 * 
-	 * @param CertRequestVO paramVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
@@ -235,79 +226,68 @@ public class GkmRestController {
 
 			logger.error("error in getGpmsInfo : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 
 		}
 
 		return resultVO;
 	}
 
-	private String convertFormatIpv6(String rowIp) throws Exception {
-		try {
-			String[] parts = new String[8];
-			int contractionIdx = rowIp.indexOf("::");
-			if(contractionIdx == -1) {  //없어
-				parts = rowIp.split(":");
+	private String convertFormatIpv6(String rowIp) {
+		String[] parts = new String[8];
+		int contractionIdx = rowIp.indexOf("::");
+		if(contractionIdx == -1) {  //없어
+			parts = rowIp.split(":");
+		} else {
+			String firstStr=rowIp.substring(0,contractionIdx);
+			String secondStr=rowIp.substring(contractionIdx+2);
+			if(firstStr.length() == 0) { //맨앞
+				String[] innerParts = secondStr.split(":");
+				for(int i = 0; i <= 8 - innerParts.length; i++) {
+					parts[i] = "0000";
+				}
+				System.arraycopy(innerParts, 0, parts, 8-innerParts.length, innerParts.length);
+			} else if(secondStr.length() == 0) { //맨뒤
+				String[] innerParts = firstStr.split(":");
+				System.arraycopy(innerParts, 0, parts, 0, innerParts.length);
+				for(int i = innerParts.length; i < 8; i++) {
+					parts[i] = "0000";
+				}
 			} else {
-				String firstStr=rowIp.substring(0,contractionIdx);
-				String secondStr=rowIp.substring(contractionIdx+2);
-				if(firstStr.length() == 0) { //맨앞
-					String[] innerParts = secondStr.split(":");
-					for(int i = 0; i <= 8 - innerParts.length; i++) {
-						parts[i] = "0000";
-					}
-					System.arraycopy(innerParts, 0, parts, 8-innerParts.length, innerParts.length);
-				} else if(secondStr.length() == 0) { //맨뒤
-					String[] innerParts = firstStr.split(":");
-					System.arraycopy(innerParts, 0, parts, 0, innerParts.length);
-					for(int i = innerParts.length; i < 8; i++) {
-						parts[i] = "0000";
-					}
-				} else {
-					String[] front = firstStr.split(":");
-					String[] back = secondStr.split(":");
-					System.arraycopy(front, 0, parts, 0, front.length);
-					for(int i=front.length;i<=8-front.length-back.length;i++) {
-						parts[i] = "0000";
-					}
-					System.arraycopy(back, 0, parts, front.length+(8-front.length-back.length), back.length );
+				String[] front = firstStr.split(":");
+				String[] back = secondStr.split(":");
+				System.arraycopy(front, 0, parts, 0, front.length);
+				for(int i=front.length;i<=8-front.length-back.length;i++) {
+					parts[i] = "0000";
 				}
+				System.arraycopy(back, 0, parts, front.length+(8-front.length-back.length), back.length );
 			}
-			for(int i = 0; i < parts.length; i++) {
-				if("*".equals(parts[i])) {
-					parts[i] = "-1";
-					break;
-				} else {
-					parts[i] = String.valueOf(Long.parseLong(parts[i], 16));
-				}
-			}
-
-			return String.join("", parts);
-		} catch (Exception ex) {
-			throw ex;
 		}
+		for(int i = 0; i < parts.length; i++) {
+			if("*".equals(parts[i])) {
+				parts[i] = "-1";
+				break;
+			} else {
+				parts[i] = String.valueOf(Long.parseLong(parts[i], 16));
+			}
+		}
+
+		return String.join("", parts);
 	}
 
-	private int convertFormat(String v) throws Exception {
-		try {
-			if ("*".equals(v)) {
-				return -1;
-			} else {
-				int iv = Integer.parseInt(v);
-				return iv;
-			}
-		} catch (Exception ex) {
-			throw ex;
+	private int convertFormat(String v) {
+		if ("*".equals(v)) {
+			return -1;
+		} else {
+			return Integer.parseInt(v);
 		}
 	}
 
 	private boolean checkIpv6Range(String ipRules, String clientIp) {
 		try {
-			String[] ips = null;
-			if (ipRules.indexOf(",") > -1) {
+			String[] ips;
+			if (ipRules.contains(",")) {
 				ips = ipRules.split(",");
 			} else {
 				ips = new String[1];
@@ -316,23 +296,23 @@ public class GkmRestController {
 
 			// target ip
 			String clientIpStr = convertFormatIpv6(clientIp);
-			for (int i = 0; i < ips.length; i++) {
+			for (String ip : ips) {
 
-				if (ips[i].indexOf("-") > -1) {
+				if (ip.contains("-")) {
 					// from, to = ip range
 					int fromCompare = clientIpStr
-							.compareTo(convertFormatIpv6(ips[i].substring(0, ips[i].indexOf("-"))));
+							.compareTo(convertFormatIpv6(ip.substring(0, ip.indexOf("-"))));
 					int toCompare = clientIpStr
-							.compareTo(convertFormatIpv6(ips[i].substring(ips[i].indexOf("-") + 1)));
+							.compareTo(convertFormatIpv6(ip.substring(ip.indexOf("-") + 1)));
 
 					if (fromCompare == 0 || toCompare == 0 || (fromCompare > 0 && toCompare < 0)) {
 						return true;
 					}
 				} else {
-					String ipRuleStr = convertFormatIpv6(ips[i]);
+					String ipRuleStr = convertFormatIpv6(ip);
 
 					// check '*' -> '-01'
-					if (ipRuleStr.indexOf("-1") > -1) {
+					if (ipRuleStr.contains("-1")) {
 						if (clientIpStr.startsWith(ipRuleStr.substring(0, ipRuleStr.indexOf("-1")))) {
 							return true;
 						}
@@ -352,8 +332,8 @@ public class GkmRestController {
 	private boolean checkIpRange(String ipRules, String clientIp) {
 
 		try {
-			String[] ips = null;
-			if (ipRules.indexOf(",") > -1) {
+			String[] ips;
+			if (ipRules.contains(",")) {
 				ips = ipRules.split(",");
 			} else {
 				ips = new String[1];
@@ -362,7 +342,7 @@ public class GkmRestController {
 
 			//ipv6
 			Pattern pattern = Pattern.compile("^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$");
-			if (pattern.matcher(clientIp).matches() == true) {
+			if (pattern.matcher(clientIp).matches()) {
 				return checkIpv6Range(ipRules, clientIp);
 			}
 
@@ -375,20 +355,20 @@ public class GkmRestController {
 				}
 			}).collect(Collectors.joining(""));
 
-			for (int i = 0; i < ips.length; i++) {
+			for (String ip : ips) {
 
-				if (ips[i].indexOf("-") > -1) {
+				if (ip.contains("-")) {
 					// from, to = ip range
 					int fromCompare = clientIpStr
-							.compareTo(Arrays.stream(ips[i].substring(0, ips[i].indexOf("-")).split("\\.")).map(s -> {
+							.compareTo(Arrays.stream(ip.substring(0, ip.indexOf("-")).split("\\.")).map(s -> {
 								try {
 									return String.format("%03d", convertFormat(s.trim()));
 								} catch (Exception e) {
 									return "ERROR";
 								}
 							}).collect(Collectors.joining("")));
-					int toCompare = clientIpStr
-							.compareTo(Arrays.stream(ips[i].substring(ips[i].indexOf("-") + 1).split("\\.")).map(s -> {
+							int toCompare = clientIpStr
+							.compareTo(Arrays.stream(ip.substring(ip.indexOf("-") + 1).split("\\.")).map(s -> {
 								try {
 									return String.format("%03d", convertFormat(s.trim()));
 								} catch (Exception e) {
@@ -400,7 +380,7 @@ public class GkmRestController {
 						return true;
 					}
 				} else {
-					String ipRuleStr = Arrays.stream(ips[i].split("\\.")).map(s -> {
+					String ipRuleStr = Arrays.stream(ip.split("\\.")).map(s -> {
 						try {
 							return String.format("%03d", convertFormat(s.trim()));
 						} catch (Exception e) {
@@ -409,7 +389,7 @@ public class GkmRestController {
 					}).collect(Collectors.joining(""));
 
 					// check '*' -> '-01'
-					if (ipRuleStr.indexOf("-01") > -1) {
+					if (ipRuleStr.contains("-01")) {
 						if (clientIpStr.startsWith(ipRuleStr.substring(0, ipRuleStr.indexOf("-01")))) {
 							return true;
 						}
@@ -460,27 +440,26 @@ public class GkmRestController {
 			validTo.set(Calendar.SECOND, 59);
 		}
 
-		return (validTo == null) ? Calendar.getInstance() : validTo;
+		return validTo;
 	}
 
 	/**
 	 * 단말 등록 요청 (CSR + 어드민 계정)
 	 * 
-	 * @param CertRequestVO paramVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
 	@PostMapping("/v1/client/register/idpw/create")
-	public ResultVO registerByAdminAccount(@RequestParam(value = "csr", required = true, defaultValue = "") String csr,
+	public ResultVO registerByAdminAccount(@RequestParam(value = "csr", defaultValue = "") String csr,
 			@RequestParam(value = "valid_date", required = false, defaultValue = "") String valid_date,
 			@RequestParam(value = "ou", required = false, defaultValue = "") String ou,
 			@RequestParam(value = "comment", required = false, defaultValue = "") String comment,
-			@RequestParam(value = "cn", required = true, defaultValue = "") String cn,
+			@RequestParam(value = "cn", defaultValue = "") String cn,
 			@RequestParam(value = "name", required = false, defaultValue = "") String clientName,
-			@RequestParam(value = "ipv4", required = true, defaultValue = "") String ipv4,
-            @RequestParam(value = "ipv6", required = true, defaultValue = "") String ipv6,
-			@RequestParam(value = "user_id", required = true, defaultValue = "") String user_id,
-			@RequestParam(value = "user_pw", required = true, defaultValue = "") String user_pw) {
+			@RequestParam(value = "ipv4", defaultValue = "") String ipv4,
+            @RequestParam(value = "ipv6", defaultValue = "") String ipv6,
+			@RequestParam(value = "user_id", defaultValue = "") String user_id,
+			@RequestParam(value = "user_pw", defaultValue = "") String user_pw) {
 
 		ResultVO resultVO = new ResultVO();
 
@@ -520,10 +499,8 @@ public class GkmRestController {
 						logger.error("error in registerByAdminAccount(createCertificate) : {}, {}, {}",
 								GPMSConstants.CODE_SYSERROR, MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR),
 								ex.toString());
-						if (resultVO != null) {
-							resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-									MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-						}
+						resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+								MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 					}
 				} else {
 					resultVO = authRe;
@@ -531,10 +508,8 @@ public class GkmRestController {
 			} catch (Exception ex) {
 				logger.error("error in registerByAdminAccount : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-				if (resultVO != null) {
-					resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-							MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-				}
+				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			}
 
 			return resultVO;
@@ -544,21 +519,20 @@ public class GkmRestController {
 	/**
 	 * 단말 갱신 요청 (CSR + 어드민 계정)
 	 * 
-	 * @param CertRequestVO paramVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
 	@PostMapping("/v1/client/register/idpw/update")
-	public ResultVO updateByAdminAccount(@RequestParam(value = "csr", required = true, defaultValue = "") String csr,
+	public ResultVO updateByAdminAccount(@RequestParam(value = "csr", defaultValue = "") String csr,
 			@RequestParam(value = "valid_date", required = false, defaultValue = "") String valid_date,
 			@RequestParam(value = "ou", required = false, defaultValue = "") String ou,
 			@RequestParam(value = "comment", required = false, defaultValue = "") String comment,
-			@RequestParam(value = "cn", required = true, defaultValue = "") String cn,
+			@RequestParam(value = "cn", defaultValue = "") String cn,
 			@RequestParam(value = "name", required = false, defaultValue = "") String clientName,
-			@RequestParam(value = "ipv4", required = true, defaultValue = "") String ipv4,
-            @RequestParam(value = "ipv6", required = true, defaultValue = "") String ipv6,
-			@RequestParam(value = "user_id", required = true, defaultValue = "") String user_id,
-			@RequestParam(value = "user_pw", required = true, defaultValue = "") String user_pw) {
+			@RequestParam(value = "ipv4", defaultValue = "") String ipv4,
+            @RequestParam(value = "ipv6",  defaultValue = "") String ipv6,
+			@RequestParam(value = "user_id", defaultValue = "") String user_id,
+			@RequestParam(value = "user_pw", defaultValue = "") String user_pw) {
 
 		ResultVO resultVO = new ResultVO();
 
@@ -597,10 +571,8 @@ public class GkmRestController {
 						logger.error("error in updateByAdminAccount(createCertificate) : {}, {}, {}",
 								GPMSConstants.CODE_SYSERROR, MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR),
 								ex.toString());
-						if (resultVO != null) {
-							resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-									MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-						}
+						resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+								MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 					}
 				} else {
 					resultVO = authRe;
@@ -608,10 +580,8 @@ public class GkmRestController {
 			} catch (Exception ex) {
 				logger.error("error in updateByAdminAccount : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-				if (resultVO != null) {
-					resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-							MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-				}
+				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			}
 
 			return resultVO;
@@ -621,21 +591,20 @@ public class GkmRestController {
 	/**
 	 * 단말 등록 요청 (CSR + 어드민 계정)
 	 * 
-	 * @param CertRequestVO paramVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
 	@PostMapping("/v1/client/register/idpw/create_or_update")
-	public ResultVO recreateByAdminAccount(@RequestParam(value = "csr", required = true, defaultValue = "") String csr,
+	public ResultVO recreateByAdminAccount(@RequestParam(value = "csr", defaultValue = "") String csr,
 			@RequestParam(value = "valid_date", required = false, defaultValue = "") String valid_date,
 			@RequestParam(value = "ou", required = false, defaultValue = "") String ou,
 			@RequestParam(value = "comment", required = false, defaultValue = "") String comment,
-			@RequestParam(value = "cn", required = true, defaultValue = "") String cn,
+			@RequestParam(value = "cn", defaultValue = "") String cn,
 			@RequestParam(value = "name", required = false, defaultValue = "") String clientName,
-			@RequestParam(value = "ipv4", required = true, defaultValue = "") String ipv4,
-            @RequestParam(value = "ipv6", required = true, defaultValue = "") String ipv6,
-			@RequestParam(value = "user_id", required = true, defaultValue = "") String user_id,
-			@RequestParam(value = "user_pw", required = true, defaultValue = "") String user_pw) {
+			@RequestParam(value = "ipv4", defaultValue = "") String ipv4,
+            @RequestParam(value = "ipv6", defaultValue = "") String ipv6,
+			@RequestParam(value = "user_id", defaultValue = "") String user_id,
+			@RequestParam(value = "user_pw", defaultValue = "") String user_pw) {
 
 		ResultVO resultVO = new ResultVO();
 
@@ -675,10 +644,8 @@ public class GkmRestController {
 						logger.error("error in recreateByAdminAccount(createCertificate) : {}, {}, {}",
 								GPMSConstants.CODE_SYSERROR, MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR),
 								ex.toString());
-						if (resultVO != null) {
-							resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-									MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-						}
+						resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+								MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 					}
 				} else {
 					resultVO = authRe;
@@ -686,10 +653,8 @@ public class GkmRestController {
 			} catch (Exception ex) {
 				logger.error("error in recreateByAdminAccount : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-				if (resultVO != null) {
-					resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-							MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-				}
+				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			}
 
 			return resultVO;
@@ -699,21 +664,20 @@ public class GkmRestController {
 	/**
 	 * 단말 등록 요청 (CSR + 등록키)
 	 * 
-	 * @param CertRequestVO paramVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
 	@PostMapping("/v1/client/register/regkey/create")
 	public ResultVO registerByRegKey(HttpServletRequest request,
-			@RequestParam(value = "csr", required = true, defaultValue = "") String csr,
+			@RequestParam(value = "csr", defaultValue = "") String csr,
 			@RequestParam(value = "valid_date", required = false, defaultValue = "") String valid_date,
 			@RequestParam(value = "ou", required = false, defaultValue = "") String ou,
 			@RequestParam(value = "comment", required = false, defaultValue = "") String comment,
-			@RequestParam(value = "cn", required = true, defaultValue = "") String cn,
-			@RequestParam(value = "ipv4", required = true, defaultValue = "") String ipv4,
-            @RequestParam(value = "ipv6", required = true, defaultValue = "") String ipv6,
+			@RequestParam(value = "cn", defaultValue = "") String cn,
+			@RequestParam(value = "ipv4", defaultValue = "") String ipv4,
+            @RequestParam(value = "ipv6", defaultValue = "") String ipv6,
 			@RequestParam(value = "name", required = false, defaultValue = "") String clientName,
-			@RequestParam(value = "regkey", required = true, defaultValue = "") String registKey) {
+			@RequestParam(value = "regkey", defaultValue = "") String registKey) {
 
 		ResultVO resultVO = new ResultVO();
 		String myIp = request.getRemoteAddr();
@@ -766,10 +730,8 @@ public class GkmRestController {
 								logger.error("error in registerByRegKey(createCertificate) : {}, {}, {}",
 										GPMSConstants.CODE_SYSERROR,
 										MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-								if (resultVO != null) {
-									resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-											MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-								}
+								resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+										MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 							}
 						} else {
 							// invalid ip range.
@@ -792,10 +754,8 @@ public class GkmRestController {
 
 				logger.error("error in registerByRegKey : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-				if (resultVO != null) {
-					resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-							MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-				}
+				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			}
 
 			return resultVO;
@@ -805,21 +765,20 @@ public class GkmRestController {
 	/**
 	 * 단말 갱신 요청 (CSR + 등록키)
 	 * 
-	 * @param CertRequestVO paramVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
 	@PostMapping("/v1/client/register/regkey/update")
 	public ResultVO updateByRegKey(HttpServletRequest request,
-			@RequestParam(value = "csr", required = true, defaultValue = "") String csr,
+			@RequestParam(value = "csr", defaultValue = "") String csr,
 			@RequestParam(value = "valid_date", required = false, defaultValue = "") String valid_date,
 			@RequestParam(value = "ou", required = false, defaultValue = "") String ou,
 			@RequestParam(value = "comment", required = false, defaultValue = "") String comment,
 			@RequestParam(value = "name", required = false, defaultValue = "") String clientName,
-			@RequestParam(value = "cn", required = true, defaultValue = "") String cn,
-			@RequestParam(value = "ipv4", required = true, defaultValue = "") String ipv4,
-            @RequestParam(value = "ipv6", required = true, defaultValue = "") String ipv6,
-			@RequestParam(value = "regkey", required = true, defaultValue = "") String registKey) {
+			@RequestParam(value = "cn", defaultValue = "") String cn,
+			@RequestParam(value = "ipv4", defaultValue = "") String ipv4,
+            @RequestParam(value = "ipv6", defaultValue = "") String ipv6,
+			@RequestParam(value = "regkey", defaultValue = "") String registKey) {
 
 		ResultVO resultVO = new ResultVO();
 		String myIp = request.getRemoteAddr();
@@ -871,10 +830,8 @@ public class GkmRestController {
 								logger.error("error in updateByRegKey(createCertificate) : {}, {}, {}",
 										GPMSConstants.CODE_SYSERROR,
 										MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-								if (resultVO != null) {
-									resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-											MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-								}
+								resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+										MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 							}
 						} else {
 							// invalid ip range.
@@ -897,10 +854,8 @@ public class GkmRestController {
 
 				logger.error("error in updateByRegKey : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-				if (resultVO != null) {
-					resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-							MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-				}
+				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			}
 
 			return resultVO;
@@ -910,21 +865,20 @@ public class GkmRestController {
 	/**
 	 * 단말 등록 요청 (CSR + 등록키)
 	 * 
-	 * @param CertRequestVO paramVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
 	@PostMapping("/v1/client/register/regkey/create_or_update")
 	public ResultVO recreateByRegKey(HttpServletRequest request,
-			@RequestParam(value = "csr", required = true, defaultValue = "") String csr,
+			@RequestParam(value = "csr", defaultValue = "") String csr,
 			@RequestParam(value = "valid_date", required = false, defaultValue = "") String valid_date,
 			@RequestParam(value = "ou", required = false, defaultValue = "") String ou,
 			@RequestParam(value = "comment", required = false, defaultValue = "") String comment,
-			@RequestParam(value = "cn", required = true, defaultValue = "") String cn,
-			@RequestParam(value = "ipv4", required = true, defaultValue = "") String ipv4,
-            @RequestParam(value = "ipv6", required = true, defaultValue = "") String ipv6,
+			@RequestParam(value = "cn", defaultValue = "") String cn,
+			@RequestParam(value = "ipv4", defaultValue = "") String ipv4,
+            @RequestParam(value = "ipv6", defaultValue = "") String ipv6,
 			@RequestParam(value = "name", required = false, defaultValue = "") String clientName,
-			@RequestParam(value = "regkey", required = true, defaultValue = "") String registKey) {
+			@RequestParam(value = "regkey", defaultValue = "") String registKey) {
 
 		ResultVO resultVO = new ResultVO();
 		String myIp = request.getRemoteAddr();
@@ -977,10 +931,8 @@ public class GkmRestController {
 								logger.error("error in recreateByRegKey(createCertificate) : {}, {}, {}",
 										GPMSConstants.CODE_SYSERROR,
 										MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-								if (resultVO != null) {
-									resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-											MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-								}
+								resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+										MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 							}
 						} else {
 							// invalid ip range.
@@ -1003,10 +955,8 @@ public class GkmRestController {
 
 				logger.error("error in recreateByRegKey : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-				if (resultVO != null) {
-					resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-							MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-				}
+				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			}
 
 			return resultVO;

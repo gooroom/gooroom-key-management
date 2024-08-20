@@ -16,6 +16,7 @@
 
 package kr.gooroom.gpms.gkm.controller.data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -24,8 +25,8 @@ import java.io.Serializable;
 
 public class PtgrCertData implements Serializable {
 
-    private static final long serialVersionUID = -1L;
-
+    @Serial
+    private static final long serialVersionUID = -8711576672855365567L;
     private String cert;
     private String signedNonce;
 

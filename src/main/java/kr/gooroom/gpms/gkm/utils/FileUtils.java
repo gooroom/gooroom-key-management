@@ -16,19 +16,11 @@
 
 package kr.gooroom.gpms.gkm.utils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 public class FileUtils {
 
@@ -79,22 +71,20 @@ public class FileUtils {
 				break;
 			}
 		}
-		long value = 0;
-		String unit = null;
+		long value;
+		String unit;
 		try {
 			value = Long.parseLong(aString.substring(0, idx));
 			unit = aString.substring(idx);
 		} catch (Exception e) {
 			return defaultValue;
 		}
-		if (unit.equals("g") || unit.equals("gb")) {
-			return value * GB;
-		} else if (unit.equals("m") || unit.equals("mb")) {
-			return value * MB;
-		} else if (unit.equals("k") || unit.equals("kb")) {
-			return value * KB;
-		}
-		return defaultValue;
+		return switch (unit) {
+			case "g", "gb" -> value * GB;
+			case "m", "mb" -> value * MB;
+			case "k", "kb" -> value * KB;
+			default -> defaultValue;
+		};
 	}
 
 	/**
@@ -137,9 +127,9 @@ public class FileUtils {
 		InputStreamReader is = null;
 		BufferedReader reader = null;
 		try {
-			is = new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8"));
+			is = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
 			reader = new BufferedReader(is);
-			String line = null;
+			String line;
 			while ((line = reader.readLine()) != null) {
 				sb.append(line);
 				if (lineEnding != null) {
@@ -180,7 +170,7 @@ public class FileUtils {
 		OutputStreamWriter os = null;
 		BufferedWriter writer = null;
 		try {
-			os = new OutputStreamWriter(new FileOutputStream(file), Charset.forName("UTF-8"));
+			os = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
 			writer = new BufferedWriter(os);
 			writer.append(content);
 			writer.flush();
@@ -220,8 +210,11 @@ public class FileUtils {
 		}
 		if (directory.isDirectory()) {
 			long length = 0;
-			for (File file : directory.listFiles()) {
-				length += folderSize(file);
+			File[] files = directory.listFiles();
+			if (files != null) {
+				for (File file : files) {
+					length += folderSize(file);
+				}
 			}
 			return length;
 		} else if (directory.isFile()) {
@@ -267,7 +260,7 @@ public class FileUtils {
 		destinationFolder.mkdirs();
 		for (File file : filesOrFolders) {
 			if (file.isDirectory()) {
-				copy(new File(destinationFolder, file.getName()), file.listFiles());
+				copy(new File(destinationFolder, file.getName()), Objects.requireNonNull(file.listFiles()));
 			} else {
 				File dFile = new File(destinationFolder, file.getName());
 				BufferedInputStream bufin = null;
@@ -277,7 +270,7 @@ public class FileUtils {
 					fos = new FileOutputStream(dFile);
 					int len = 8196;
 					byte[] buff = new byte[len];
-					int n = 0;
+					int n;
 					while ((n = bufin.read(buff, 0, len)) != -1) {
 						fos.write(buff, 0, n);
 					}
@@ -285,12 +278,12 @@ public class FileUtils {
 					try {
 						if (bufin != null)
 							bufin.close();
-					} catch (Throwable t) {
+					} catch (Throwable ignored) {
 					}
 					try {
 						if (fos != null)
 							fos.close();
-					} catch (Throwable t) {
+					} catch (Throwable ignored) {
 					}
 				}
 				dFile.setLastModified(file.lastModified());

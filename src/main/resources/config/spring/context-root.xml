@@ -82,12 +82,18 @@
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
         <property name="algorithm" value="PBEWITHMD5ANDDES" />
         <property name="password" value="GOOROOM_GPMS_PASS_KEY" />
-    </bean>  
-      
+    </bean>
+
     <bean id="configurationEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">  
        <property name="config" ref="environmentVariablesConfiguration" />  
-    </bean>  
-	
+    </bean>
+
+	<bean id="passwordEncoder" class="org.springframework.security.crypto.password.Pbkdf2PasswordEncoder">
+		<constructor-arg  value="GOOROOM"/>
+		<constructor-arg  value="16"/>
+		<constructor-arg  value="2000"/>
+		<constructor-arg  value="PBKDF2WithHmacSHA256"/>
+	</bean>
 	<!-- org.springframework.jdbc.datasource.DataSourceTransactionManager -->
 	<bean id="transactionManagerMeta"
 		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">

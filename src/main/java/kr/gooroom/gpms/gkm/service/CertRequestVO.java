@@ -16,12 +16,14 @@
 
 package kr.gooroom.gpms.gkm.service;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-@SuppressWarnings("serial")
 public class CertRequestVO implements Serializable {
 
+	@Serial
+	private static final long serialVersionUID = -5513526430599851673L;
 	private String csr;
 	private Date expireDate;
 

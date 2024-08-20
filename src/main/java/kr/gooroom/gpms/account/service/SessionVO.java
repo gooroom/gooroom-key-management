@@ -16,6 +16,7 @@
 
 package kr.gooroom.gpms.account.service;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -27,9 +28,10 @@ import java.sql.Timestamp;
  * @since 1.8
  */
 
-@SuppressWarnings("serial")
 public class SessionVO implements Serializable {
 
+	@Serial
+	private static final long serialVersionUID = -8062622961552983225L;
 	String userId;
 	String userName;
 	String displayName;

@@ -16,38 +16,13 @@
 
 package kr.gooroom.gpms.gkm.utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.UUID;
-
+import kr.gooroom.gpms.common.GPMSConstants;
+import kr.gooroom.gpms.common.service.CertForServerVO;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -63,11 +38,19 @@ import org.bouncycastle.pkcs.jcajce.JcePKCSPBEOutputEncryptorBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
-
-import kr.gooroom.gpms.common.GPMSConstants;
-import kr.gooroom.gpms.common.service.CertForServerVO;
 import org.springframework.security.crypto.codec.Hex;
 import org.springframework.security.crypto.codec.Utf8;
+
+import java.io.*;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CertificateUtils {
 
@@ -83,11 +66,11 @@ public class CertificateUtils {
 		}
 	}
 
-	public static enum RevocationReason {
+	public enum RevocationReason {
 		unspecified, keyCompromise, caCompromise, affiliationChanged, superseded, cessationOfOperation, certificateHold,
 		unused, removeFromCRL, privilegeWithdrawn, ACompromise;
 
-		public static RevocationReason[] reasons = { unspecified, keyCompromise, caCompromise, affiliationChanged,
+		public static final RevocationReason[] reasons = { unspecified, keyCompromise, caCompromise, affiliationChanged,
 				superseded, cessationOfOperation, privilegeWithdrawn };
 
 		@Override
@@ -96,7 +79,7 @@ public class CertificateUtils {
 		}
 	}
 
-	private String CA_OCSP_ENDPOINT_URL = prop.getProperty("gooroom.ocsp.url");
+	private final String CA_OCSP_ENDPOINT_URL = prop.getProperty("gooroom.ocsp.url");
 
 	public CertificateVO createGcspCertificate (String cn, Date validToDate, BigInteger newSerialNo, String pw) throws Exception {
 
@@ -111,7 +94,7 @@ public class CertificateUtils {
 		// 루트 개인키 로드
 		File privKeyFile = new File(GPMSConstants.ROOT_KEYPATH + "/" + GPMSConstants.ROOT_KEYFILENAME);
 		// PemReader pemReader = new PemReader(new FileReader(privKeyFile));
-		PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(privKeyFile), "UTF-8"));
+		PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(privKeyFile), StandardCharsets.UTF_8));
 		PemObject pemObject = pemReader.readPemObject();
 		pemReader.close();
 		byte[] privKeyBytes = pemObject.getContent();
@@ -154,14 +137,11 @@ public class CertificateUtils {
 
 		PemObject certPemObject = new PemObject("CERTIFICATE", cert.getEncoded());
 		ByteArrayOutputStream certBs = new ByteArrayOutputStream();
-		PemWriter certPemWriter = new PemWriter(new OutputStreamWriter(certBs, "UTF-8"));
-		certBs.close();
-		try {
+		try (PemWriter certPemWriter = new PemWriter(new OutputStreamWriter(certBs, StandardCharsets.UTF_8))) {
+			certBs.close();
 			certPemWriter.writeObject(certPemObject);
-		} finally {
-			certPemWriter.close();
 		}
-		vo.setCertificatePem(certBs.toString("UTF-8"));
+		vo.setCertificatePem(certBs.toString(StandardCharsets.UTF_8));
 
 		PemObject priPemObject;
 		if (pw.isEmpty())
@@ -175,14 +155,11 @@ public class CertificateUtils {
 			priPemObject = encryt.generate();
 		}
 		ByteArrayOutputStream priBs = new ByteArrayOutputStream();
-		PemWriter priPemWriter = new PemWriter(new OutputStreamWriter(priBs, "UTF-8"));
-		priBs.close();
-		try {
+		try (PemWriter priPemWriter = new PemWriter(new OutputStreamWriter(priBs, StandardCharsets.UTF_8))) {
+			priBs.close();
 			priPemWriter.writeObject(priPemObject);
-		} finally {
-			priPemWriter.close();
 		}
-		vo.setPrivateKeyPem(priBs.toString("UTF-8"));
+		vo.setPrivateKeyPem(priBs.toString(StandardCharsets.UTF_8));
 
 		return vo;
 	}
@@ -202,7 +179,7 @@ public class CertificateUtils {
 		// 서버 개인키 로드
 		File privKeyFile = new File(GPMSConstants.ROOT_KEYPATH + "/" + GPMSConstants.ROOT_KEYFILENAME);
 		// PemReader pemReader = new PemReader(new FileReader(privKeyFile));
-		PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(privKeyFile), "UTF-8"));
+		PemReader pemReader = new PemReader(new InputStreamReader(new FileInputStream(privKeyFile), StandardCharsets.UTF_8));
 		PemObject pemObject = pemReader.readPemObject();
 		pemReader.close();
 
@@ -238,10 +215,6 @@ public class CertificateUtils {
 			X509Certificate cert = new JcaX509CertificateConverter().getCertificate(holder);
 			return cert;
 
-		} catch (CertificateException | CertIOException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -292,7 +265,7 @@ public class CertificateUtils {
 
 	public int getDayCountToDate(String toDate) {
 
-		int re = -1;
+		int re;
 		try {
 			Calendar cal = Calendar.getInstance();
 			Date beginDate = cal.getTime();
@@ -321,13 +294,13 @@ public class CertificateUtils {
 		try {
 
 			byte[] inKmFile = FileUtils.readContent(new File(GPMSConstants.GKM_SERVER_CERTFILE));
-			certificateVO.setGkmCertificate(new String(inKmFile, "UTF-8"));
+			certificateVO.setGkmCertificate(new String(inKmFile, StandardCharsets.UTF_8));
 
 			byte[] inLmFile = FileUtils.readContent(new File(GPMSConstants.GLM_SERVER_CERTFILE));
-			certificateVO.setGlmCertificate(new String(inLmFile, "UTF-8"));
+			certificateVO.setGlmCertificate(new String(inLmFile, StandardCharsets.UTF_8));
 
 			byte[] inRmFile = FileUtils.readContent(new File(GPMSConstants.GRM_SERVER_CERTFILE));
-			certificateVO.setGrmCertificate(new String(inRmFile, "UTF-8"));
+			certificateVO.setGrmCertificate(new String(inRmFile, StandardCharsets.UTF_8));
 
 		} catch (Exception ex) {
 

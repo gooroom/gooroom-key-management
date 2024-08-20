@@ -16,17 +16,15 @@
 
 package kr.gooroom.gpms.valid.service.impl;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Repository;
-
 import kr.gooroom.gpms.common.GPMSConstants;
 import kr.gooroom.gpms.common.service.dao.SqlSessionMetaDAO;
 import kr.gooroom.gpms.common.utils.MessageSourceHelper;
 import kr.gooroom.gpms.valid.service.ClientRegKeyVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
+
+import java.util.HashMap;
 
 /**
  * data access object class for registration key user management process.
@@ -47,13 +45,12 @@ public class ClientRegKeyDAO extends SqlSessionMetaDAO {
 	 * 
 	 * @param registKey string registration key
 	 * @return RegistInfoVO List
-	 * @throws SQLException
 	 */
-	public ClientRegKeyVO selectRegistInfo(String registKey) throws SQLException {
+	public ClientRegKeyVO selectRegistInfo(String registKey) {
 
-		ClientRegKeyVO re = null;
+		ClientRegKeyVO re;
 		try {
-			HashMap<String, String> map = new HashMap<String, String>();
+			HashMap<String, String> map = new HashMap<>();
 			map.put("registKey", registKey);
 
 			re = sqlSessionMeta.selectOne("selectRegistrationInfo", map);

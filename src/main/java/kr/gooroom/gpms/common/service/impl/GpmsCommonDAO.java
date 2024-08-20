@@ -38,16 +38,13 @@ public class GpmsCommonDAO extends SqlSessionMetaDAO {
 	/**
 	 * 서버 정보(ip, url) 조회
 	 * 
-	 * @param
 	 * @return ServerAddrInfoVO
-	 * @throws SQLException
 	 */
-	public ServerAddrInfoVO getGpmsServersInfo() throws SQLException {
+	public ServerAddrInfoVO getGpmsServersInfo() {
 		ServerAddrInfoVO re = null;
 		try {
 			re = sqlSessionMeta.selectOne("selectServerAddrInfo");
 		} catch (Exception ex) {
-			re = null;
 			logger.error("error in getGpmsServersInfo : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
 		}
@@ -57,16 +54,13 @@ public class GpmsCommonDAO extends SqlSessionMetaDAO {
 	/**
 	 * 서버 버전 조회
 	 * 
-	 * @param
 	 * @return ServerVersion
-	 * @throws SQLException
 	 */
-	public ServerBasicInfoVO selectSiteVersion() throws SQLException {
+	public ServerBasicInfoVO selectSiteVersion() {
 		ServerBasicInfoVO re = null;
 		try {
 			re = sqlSessionMeta.selectOne("selectSiteVersion", GPMSConstants.SITE_NAME);
 		} catch (Exception ex) {
-			re = null;
 			logger.error("error in selectSiteVersion : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
 		}
@@ -76,7 +70,6 @@ public class GpmsCommonDAO extends SqlSessionMetaDAO {
 	/**
 	 * 서버 단말 아이디 등록 코드 조회
 	 *
-	 * @param
 	 * @return ServerVersion
 	 * @throws SQLException
 	 */
@@ -85,7 +78,6 @@ public class GpmsCommonDAO extends SqlSessionMetaDAO {
 		try {
 			re = sqlSessionMeta.selectOne("selectSiteRegCode", GPMSConstants.SITE_NAME);
 		} catch (Exception ex) {
-			re = null;
 			logger.error("error in selectSiteRegCode : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
 		}
@@ -104,7 +96,6 @@ public class GpmsCommonDAO extends SqlSessionMetaDAO {
 		try {
 			re = sqlSessionMeta.selectList("selectClientGroupIpInfo");
 		} catch (Exception ex) {
-			re = null;
 			logger.error("error in selectClientGroupIpInfo : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
 		}

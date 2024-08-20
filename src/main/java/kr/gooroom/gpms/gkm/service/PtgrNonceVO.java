@@ -16,6 +16,7 @@
 
 package kr.gooroom.gpms.gkm.service;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -24,8 +25,8 @@ import java.io.Serializable;
 
 public class PtgrNonceVO implements Serializable {
 
-    private static final long serialVersionUID = -1L;
-
+    @Serial
+    private static final long serialVersionUID = -3635397553608296559L;
     private String cn;
     private String nonce;
     private String regDt;

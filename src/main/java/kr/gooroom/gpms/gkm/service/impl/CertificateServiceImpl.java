@@ -16,26 +16,15 @@
 
 package kr.gooroom.gpms.gkm.service.impl;
 
-/**
- * client certificate management service implements class
- * 
- * @author HNC
- * @version 1.0
- * @since 1.8
- */
-
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.security.cert.X509Certificate;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.UUID;
-
 import jakarta.annotation.Resource;
-
+import kr.gooroom.gpms.common.GPMSConstants;
 import kr.gooroom.gpms.common.service.*;
+import kr.gooroom.gpms.common.service.impl.GpmsCommonDAO;
+import kr.gooroom.gpms.common.utils.AutoGroupSelector;
+import kr.gooroom.gpms.common.utils.MessageSourceHelper;
+import kr.gooroom.gpms.gkm.service.CertRequestVO;
+import kr.gooroom.gpms.gkm.service.CertificateService;
+import kr.gooroom.gpms.gkm.utils.CertificateUtils;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.slf4j.Logger;
@@ -45,13 +34,15 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-import kr.gooroom.gpms.common.GPMSConstants;
-import kr.gooroom.gpms.common.service.impl.GpmsCommonDAO;
-import kr.gooroom.gpms.common.utils.AutoGroupSelector;
-import kr.gooroom.gpms.common.utils.MessageSourceHelper;
-import kr.gooroom.gpms.gkm.service.CertRequestVO;
-import kr.gooroom.gpms.gkm.service.CertificateService;
-import kr.gooroom.gpms.gkm.utils.CertificateUtils;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.UUID;
 
 @Service("certificateService")
 public class CertificateServiceImpl implements CertificateService {
@@ -78,7 +69,7 @@ public class CertificateServiceImpl implements CertificateService {
 	synchronized public ResultVO createCertificateFromCSR(CertRequestVO vo) throws Exception {
 
 		ResultVO resultVO = new ResultVO();
-		String certPem = "";
+		String certPem;
 
 		CertificateUtils utils = new CertificateUtils();
 
@@ -92,7 +83,7 @@ public class CertificateServiceImpl implements CertificateService {
 		}
 
 		// @@@ 고유 번호 생성 필요 (Serial no)
-		UUID uuid = UUID.nameUUIDFromBytes(vo.getCn().getBytes("UTF-8"));
+		UUID uuid = UUID.nameUUIDFromBytes(vo.getCn().getBytes(StandardCharsets.UTF_8));
 		BigInteger newSerialNo = utils.getBigIntegerFromUuid(uuid);
 
 		try {
@@ -103,11 +94,8 @@ public class CertificateServiceImpl implements CertificateService {
 				// PEM 형식으로 변경
 				PemObject pemObject = new PemObject("CERTIFICATE", clientCert.getEncoded());
 				StringWriter sw = new StringWriter();
-				PemWriter pemWriter = new PemWriter(sw);
-				try {
+				try (PemWriter pemWriter = new PemWriter(sw)) {
 					pemWriter.writeObject(pemObject);
-				} finally {
-					pemWriter.close();
 				}
 				certPem = sw.toString();
 				
@@ -178,10 +166,8 @@ public class CertificateServiceImpl implements CertificateService {
 
 			logger.error("error in createCertificateFromCSR : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), sqlEx.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			throw sqlEx;
 
 		} catch (Exception ex) {
@@ -189,10 +175,8 @@ public class CertificateServiceImpl implements CertificateService {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			logger.error("error in createCertificateFromCSR : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 		}
 
 		return resultVO;
@@ -210,7 +194,7 @@ public class CertificateServiceImpl implements CertificateService {
 	synchronized public ResultVO updateCertificateFromCSR(CertRequestVO vo) throws Exception {
 
 		ResultVO resultVO = new ResultVO();
-		String certPem = "";
+		String certPem;
 
 		CertificateUtils utils = new CertificateUtils();
 
@@ -224,7 +208,7 @@ public class CertificateServiceImpl implements CertificateService {
 		}
 
 		// @@@ 고유 번호 생성 필요 (Serial no)
-		UUID uuid = UUID.nameUUIDFromBytes(vo.getCn().getBytes("UTF-8"));
+		UUID uuid = UUID.nameUUIDFromBytes(vo.getCn().getBytes(StandardCharsets.UTF_8));
 		BigInteger newSerialNo = utils.getBigIntegerFromUuid(uuid);
 
 		// below code is not use.
@@ -244,11 +228,8 @@ public class CertificateServiceImpl implements CertificateService {
 			// PEM 형식으로 변경
 			PemObject pemObject = new PemObject("CERTIFICATE", clientCert.getEncoded());
 			StringWriter sw = new StringWriter();
-			PemWriter pemWriter = new PemWriter(sw);
-			try {
+			try (PemWriter pemWriter = new PemWriter(sw)) {
 				pemWriter.writeObject(pemObject);
-			} finally {
-				pemWriter.close();
 			}
 
 			certPem = sw.toString();
@@ -311,10 +292,8 @@ public class CertificateServiceImpl implements CertificateService {
 
 			logger.error("error in updateCertificateFromCSR : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), sqlEx.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			throw sqlEx;
 
 		} catch (Exception ex) {
@@ -322,10 +301,8 @@ public class CertificateServiceImpl implements CertificateService {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			logger.error("error in updateCertificateFromCSR : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 		}
 
 		return resultVO;
@@ -343,7 +320,7 @@ public class CertificateServiceImpl implements CertificateService {
 	synchronized public ResultVO reCreateCertificateFromCSR(CertRequestVO vo) throws Exception {
 
 		ResultVO resultVO = new ResultVO();
-		String certPem = "";
+		String certPem;
 
 		CertificateUtils utils = new CertificateUtils();
 
@@ -351,7 +328,7 @@ public class CertificateServiceImpl implements CertificateService {
 		boolean isExist = certificateDao.isExistClientName(vo.getCn());
 
 		// @@@ 고유 번호 생성 필요 (Serial no)
-		UUID uuid = UUID.nameUUIDFromBytes(vo.getCn().getBytes("UTF-8"));
+		UUID uuid = UUID.nameUUIDFromBytes(vo.getCn().getBytes(StandardCharsets.UTF_8));
 		BigInteger newSerialNo = utils.getBigIntegerFromUuid(uuid);
 
 		try {
@@ -361,11 +338,8 @@ public class CertificateServiceImpl implements CertificateService {
 			// PEM 형식으로 변경
 			PemObject pemObject = new PemObject("CERTIFICATE", clientCert.getEncoded());
 			StringWriter sw = new StringWriter();
-			PemWriter pemWriter = new PemWriter(sw);
-			try {
+			try (PemWriter pemWriter = new PemWriter(sw)) {
 				pemWriter.writeObject(pemObject);
-			} finally {
-				pemWriter.close();
 			}
 
 			certPem = sw.toString();
@@ -413,7 +387,7 @@ public class CertificateServiceImpl implements CertificateService {
 				certificateVO.setSerialNo(String.valueOf(newSerialNo));
 
 				// 테이블에 저장
-				long re = -1;
+				long re;
 				if (isExist) {
 					certificateVO.setChgTp(GPMSConstants.CODE_CHANGE_TYPE_UPDATE);
 					re = certificateDao.updateClientCertificateAndName(certificateVO);
@@ -441,10 +415,8 @@ public class CertificateServiceImpl implements CertificateService {
 
 			logger.error("error in createCertificateFromCSR : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), sqlEx.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 			throw sqlEx;
 
 		} catch (Exception ex) {
@@ -452,10 +424,8 @@ public class CertificateServiceImpl implements CertificateService {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			logger.error("error in createCertificateFromCSR : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 		}
 
 		return resultVO;
@@ -471,9 +441,6 @@ public class CertificateServiceImpl implements CertificateService {
 	@Override
 	public StatusVO isRevoked(String serialNo) throws Exception {
 
-		// System.out.println("[ isRevoked ] - " + serialNo + " (" +
-		// Calendar.getInstance().getTimeInMillis() + ")");
-
 		StatusVO statusVO = new StatusVO();
 
 		try {
@@ -488,19 +455,15 @@ public class CertificateServiceImpl implements CertificateService {
 		} catch (SQLException sqlEx) {
 			logger.error("error in isRevoked : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), sqlEx.toString());
-			if (statusVO != null) {
-				statusVO.setResultInfo(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR));
-			}
+			statusVO.setResultInfo(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR));
 			throw sqlEx;
 
 		} catch (Exception ex) {
 			logger.error("error in isRevoked : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (statusVO != null) {
-				statusVO.setResultInfo(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR));
-			}
+			statusVO.setResultInfo(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR));
 		}
 
 		return statusVO;

@@ -16,12 +16,14 @@
 
 package kr.gooroom.gpms.valid.service;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-@SuppressWarnings("serial")
 public class ClientRegKeyVO implements Serializable {
 
+	@Serial
+	private static final long serialVersionUID = -5366937282686525104L;
 	private String regKeyNo;
 
 	private Date validDate;

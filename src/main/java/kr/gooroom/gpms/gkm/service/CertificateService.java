@@ -24,7 +24,7 @@ public interface CertificateService {
 	/**
 	 * create certificate with sign from csr
 	 * 
-	 * @param CertRequestVO
+	 * @param  vo CertRequestVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
@@ -33,7 +33,7 @@ public interface CertificateService {
 	/**
 	 * update certificate with sign from csr
 	 * 
-	 * @param CertRequestVO
+	 * @param vo CertRequestVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */
@@ -42,7 +42,7 @@ public interface CertificateService {
 	/**
 	 * re-create certificate with sign from csr
 	 * 
-	 * @param CertRequestVO
+	 * @param vo CertRequestVO
 	 * @return ResultVO
 	 * @throws Exception
 	 */

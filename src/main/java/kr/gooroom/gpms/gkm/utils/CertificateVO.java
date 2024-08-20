@@ -16,13 +16,15 @@
 
 package kr.gooroom.gpms.gkm.utils;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
-@SuppressWarnings("serial")
 public class CertificateVO implements Serializable {
 
+	@Serial
+	private static final long serialVersionUID = -64655342265593105L;
 	private X509Certificate certificate;
 	private String certificatePem;
 

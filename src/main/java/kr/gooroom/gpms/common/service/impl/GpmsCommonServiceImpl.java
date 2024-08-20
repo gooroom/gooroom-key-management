@@ -45,10 +45,9 @@ public class GpmsCommonServiceImpl implements GpmsCommonService {
 	 * 
 	 * @param
 	 * @return ResultVO
-	 * @throws Exception
 	 */
 	@Override
-	public ResultVO getGpmsServersInfo() throws Exception {
+	public ResultVO getGpmsServersInfo() {
 
 		ResultVO resultVO = new ResultVO();
 
@@ -75,10 +74,8 @@ public class GpmsCommonServiceImpl implements GpmsCommonService {
 		} catch (Exception ex) {
 			logger.error("error in getGpmsServersInfo : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 		}
 
 		return resultVO;
@@ -89,10 +86,9 @@ public class GpmsCommonServiceImpl implements GpmsCommonService {
 	 * 
 	 * @param
 	 * @return ResultVO
-	 * @throws Exception
 	 */
 	@Override
-	public ResultVO getGpmsServersCertificate() throws Exception {
+	public ResultVO getGpmsServersCertificate() {
 
 		ResultVO resultVO = new ResultVO();
 		CertificateUtils utils = new CertificateUtils();
@@ -119,10 +115,8 @@ public class GpmsCommonServiceImpl implements GpmsCommonService {
 		} catch (Exception ex) {
 			logger.error("error in getGpmsServersCertificate : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 		}
 
 		return resultVO;
@@ -133,10 +127,9 @@ public class GpmsCommonServiceImpl implements GpmsCommonService {
 	 * 
 	 * @param
 	 * @return ResultVO
-	 * @throws Exception
 	 */
 	@Override
-	public ResultVO getGpmsServerVersion() throws Exception {
+	public ResultVO getGpmsServerVersion() {
 
 		ResultVO resultVO = new ResultVO();
 
@@ -160,10 +153,8 @@ public class GpmsCommonServiceImpl implements GpmsCommonService {
 		} catch (Exception ex) {
 			logger.error("error in getGpmsServerVersion : {}, {}, {}", GPMSConstants.CODE_SYSERROR,
 					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR), ex.toString());
-			if (resultVO != null) {
-				resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
-						MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
-			}
+			resultVO.setStatus(new StatusVO(GPMSConstants.MSG_FAIL, GPMSConstants.CODE_SYSERROR,
+					MessageSourceHelper.getMessage(GPMSConstants.MSG_SYSERROR)));
 		}
 
 		return resultVO;

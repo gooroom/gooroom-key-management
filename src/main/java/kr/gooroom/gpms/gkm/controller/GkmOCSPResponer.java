@@ -72,10 +72,6 @@ public class GkmOCSPResponer {
 
 			OCSPResp ocspresp = getSignedOcspResponse(ocspreq, ocspCertificate, isGood);
 			setOcspResponse(res, ocspresp);
-
-			// System.out.println("[ checkOCSP - e n d ] - (" +
-			// Calendar.getInstance().getTimeInMillis() + ") - " + req);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -91,19 +87,16 @@ public class GkmOCSPResponer {
 	}
 
 	private OCSPResp getSignedOcspResponse(OCSPReq ocspreq, OCSPCertificate ocspCertificate, boolean isGood) {
-		int responseCode = OCSPRespBuilder.INTERNAL_ERROR;
+		int responseCode;
 		ResponderID respondID = new ResponderID(ocspCertificate.getCertificateChain()[0].getSubject());
 		RespID respID = new RespID(respondID);
 		BasicOCSPRespBuilder bOCSPbuilder = new BasicOCSPRespBuilder(respID);
 
-		// Date dateRevoke = new Date();
-		// bOCSPbuilder.addResponse(ocspreq.getRequestList()[0].getCertID(), new
-		// org.bouncycastle.cert.ocsp.UnknownStatus());
 		bOCSPbuilder.addResponse(ocspreq.getRequestList()[0].getCertID(), getStatus(isGood));
 
 		Extension ext = ocspreq.getExtension(ID_NONCE);
 		bOCSPbuilder.setResponseExtensions(new Extensions(new Extension[] { ext }));
-		BasicOCSPResp basicResponse = null;
+		BasicOCSPResp basicResponse;
 		Date myDate = new Date(1000000);
 		OCSPResp ocspResp = null;
 		try {
@@ -131,7 +124,7 @@ public class GkmOCSPResponer {
 
 	// private boolean setRequestData(HttpServletRequest req, List<RequestData>
 	// reqData, OCSPReq ocspreq) throws IOException {
-	private boolean setRequestData(OCSPReq ocspreq) throws IOException {
+	private boolean setRequestData(OCSPReq ocspreq) {
 
 		boolean result = false;
 
@@ -141,29 +134,21 @@ public class GkmOCSPResponer {
 			// ??
 		}
 
-		for (int i = 0; i < requestList.length; i++) {
+		for (org.bouncycastle.cert.ocsp.Req req : requestList) {
 
-			BigInteger certSerialNo = requestList[i].getCertID().getSerialNumber();
-			ASN1ObjectIdentifier algID = requestList[i].getCertID().getHashAlgOID();
-			if (ID_ASN1.equals(algID)) {
-				// tmpReq.setHashAlgorithmOID(algID);
-				// ??
-			} else {
+			BigInteger certSerialNo = req.getCertID().getSerialNumber();
+			ASN1ObjectIdentifier algID = req.getCertID().getHashAlgOID();
+			if (!ID_ASN1.equals(algID)) {
 				throw new IllegalArgumentException();
 			}
 
 			// USE DATABASE
-			StatusVO statusVO = new StatusVO();
 			try {
-				statusVO = certificateService.isRevoked(String.valueOf(certSerialNo));
+				StatusVO statusVO = certificateService.isRevoked(String.valueOf(certSerialNo));
 				if (statusVO != null) {
-					if ("true".equals(statusVO.getMessage())) {
-						// REVOKED
-						result = false;
-					} else {
-						// NOT REVOKED
-						result = true;
-					}
+					// REVOKED
+					// NOT REVOKED
+					result = !"true".equals(statusVO.getMessage());
 				} else {
 					// QUERY ERROR
 					result = false;
@@ -185,13 +170,12 @@ public class GkmOCSPResponer {
 		// System.out.println("Verification de la requete recue");
 		byte[] reqBytes = checkByteArray(baos);
 		// System.out.println("Recuperation des data de la requete");
-		OCSPReq ocspreq = new OCSPReq(reqBytes);
-		return ocspreq;
+		return new OCSPReq(reqBytes);
 	}
 
 	private byte[] checkByteArray(ByteArrayOutputStream baos) {
 		byte[] reqBytes = baos.toByteArray();
-		if ((reqBytes == null) || (reqBytes.length == 0)) {
+		if (reqBytes.length == 0) {
 			// System.out.println("No Request bytes");
 			throw new IllegalArgumentException("No request bytes");
 		}

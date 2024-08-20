@@ -16,12 +16,14 @@
 
 package kr.gooroom.gpms.common.service;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-@SuppressWarnings("serial")
 public class ServerAddrInfoVO implements Serializable {
 
+	@Serial
+	private static final long serialVersionUID = 7182696655463381243L;
 	private String gkmIp;
 	private String gkmUrl;
 

@@ -51,9 +51,9 @@
 	<!-- 관리자 정보 조회:인증!!!! -->
 	<select id="selectAdminUserAuthAndInfo" parameterType="hashmap" resultMap="adminUserInfo">
 	
-		SELECT ADMIN_ID, ADMIN_NM
+		SELECT ADMIN_ID, ADMIN_NM, ADMIN_PW
 		FROM ADMIN_MSTR
-		WHERE ADMIN_ID = #{adminId} AND ADMIN_PW = SHA2(#{adminPw}, 256)
+		WHERE ADMIN_ID = #{adminId}
 
 	</select>
 

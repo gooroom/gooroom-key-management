@@ -77,24 +77,12 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	 * 
 	 * @param cn String
 	 * @return boolean result
-	 * @throws Exception
 	 */
-	public boolean isValidClientName(String cn) throws SQLException {
+	public boolean isValidClientName(String cn) {
 
-		boolean isValid = false;
-		int re = -1;
-
-		try {
-			re = ((Integer) sqlSessionMeta.selectOne("selectClientNameCount", cn)).intValue();
-			if (re > 0) {
-				isValid = false;
-			} else {
-				isValid = true;
-			}
-		} catch (Exception ex) {
-			re = -1;
-			isValid = false;
-		}
+		boolean isValid;
+		int re = sqlSessionMeta.selectOne("selectClientNameCount", cn);
+		isValid = re <= 0;
 
 		return isValid;
 	}
@@ -104,24 +92,12 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	 * 
 	 * @param cn String
 	 * @return boolean result
-	 * @throws Exception
 	 */
-	public boolean isExistClientName(String cn) throws SQLException {
+	public boolean isExistClientName(String cn) {
 
-		boolean isValid = false;
-		int re = -1;
-
-		try {
-			re = ((Integer) sqlSessionMeta.selectOne("selectClientNameCount", cn)).intValue();
-			if (re > 0) {
-				isValid = true;
-			} else {
-				isValid = false;
-			}
-		} catch (Exception ex) {
-			re = -1;
-			isValid = false;
-		}
+		boolean isValid;
+		int re = sqlSessionMeta.selectOne("selectClientNameCount", cn);
+		isValid = re > 0;
 
 		return isValid;
 	}
@@ -135,7 +111,7 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	 */
 	public String selectSimpleClientId(String cn) throws SQLException {
 
-		String simpleClientId = "";
+		String simpleClientId;
 
 		try {
 			simpleClientId = sqlSessionMeta.selectOne("selectSimpleClientId", cn);
@@ -153,16 +129,7 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	 * @throws Exception
 	 */
 	public int selectNextClientNo() throws SQLException {
-
-		int re = -1;
-
-		try {
-			re = ((Integer) sqlSessionMeta.selectOne("selectNextClientNo")).intValue();
-		} catch (Exception ex) {
-			re = -1;
-		}
-
-		return re;
+		return sqlSessionMeta.selectOne("selectNextClientNo");
 	}
 
 	/**
@@ -174,23 +141,15 @@ public class CertificateDAO extends SqlSessionMetaDAO {
 	 */
 	public boolean isRevoked(String serialNo) throws SQLException {
 
-		boolean revoked = false;
-		int re = -1;
-
+		boolean revoked;
+		int re;
 		try {
-
-			Map<String, Object> param = new HashMap<String, Object>();
+			Map<String, Object> param = new HashMap<>();
 			param.put("serialNo", serialNo);
 			param.put("status", GPMSConstants.STS_REVOKED);
-
-			re = ((Integer) sqlSessionMeta.selectOne("selectRevokedClientBySerialNo", param)).intValue();
-			if (re > 0) {
-				revoked = false;
-			} else {
-				revoked = true;
-			}
+			re = sqlSessionMeta.selectOne("selectRevokedClientBySerialNo", param);
+			revoked = re <= 0;
 		} catch (Exception ex) {
-			re = -1;
 			revoked = true;
 		}
 

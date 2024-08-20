@@ -29,7 +29,7 @@ public interface PtgrNonceService {
      * @return
      * @throws Exception
      */
-    public PtgrNonceVO selectCertNonceByCN(String cn) throws Exception;
+    PtgrNonceVO selectCertNonceByCN(String cn) throws Exception;
 
     /**
      * 인증서 난수값 정보 갱신
@@ -38,5 +38,5 @@ public interface PtgrNonceService {
      * @return
      * @throws Exception
      */
-    public int insertCentNonce(PtgrNonceVO ptgrNonceVO) throws Exception;
+    int insertCentNonce(PtgrNonceVO ptgrNonceVO) throws Exception;
 }
