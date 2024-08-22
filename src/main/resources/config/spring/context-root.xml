@@ -38,14 +38,13 @@
 	 -->
 
 	<!-- Properties Files -->
-	<bean id="propertyConfigurer" class="org.jasypt.spring31.properties.EncryptablePropertyPlaceholderConfigurer">
-        <constructor-arg ref="configurationEncryptor" />
-        <property name="locations">
-            <list>
-                <value>classpath:/properties/db.properties</value>
-            </list>
-        </property>
-    </bean>
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:/properties/db.properties</value>
+			</list>
+		</property>
+	</bean>
 
 	<!-- Meta DataSource Configuration -->
 	<bean id="dataSourceMeta" class="org.apache.commons.dbcp2.BasicDataSource"
@@ -53,14 +52,14 @@
 		<property name="driverClassName" value="${metadb.driverClassName}" />
 		<property name="url" value="${metadb.url}" />
 		<property name="username" value="${metadb.username}" />
-		<property name="password" value="${metadb.password}" />
+		<property name="password" value="#{gpmsEncryptor.decrypt('${metadb.password1}', '${metadb.password2}', '${metadb.salt}')}" />
 		<property name="initialSize" value="${metadb.initialSize}" />
 		<property name="maxTotal" value="${metadb.maxActive}" />
 		<property name="maxIdle" value="${metadb.maxIdle}" />
 		<property name="minIdle" value="${metadb.minIdle}" />
-		<property name="poolPreparedStatements" value="true"></property>
-		<property name="maxOpenPreparedStatements" value="50"></property>
-		<property name="validationQuery" value="select 1" ></property>
+		<property name="poolPreparedStatements" value="true"/>
+		<property name="maxOpenPreparedStatements" value="50"/>
+		<property name="validationQuery" value="select 1" />
 	</bean>
 
 	<!-- meta 데이터베이스 -->
@@ -78,22 +77,7 @@
 	<bean id="sqlSessionMeta" class="org.mybatis.spring.SqlSessionTemplate">
 		<constructor-arg ref="sqlSessionFactoryMeta" />
 	</bean>
-	
-	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
-        <property name="algorithm" value="PBEWITHMD5ANDDES" />
-        <property name="password" value="GOOROOM_GPMS_PASS_KEY" />
-    </bean>
 
-    <bean id="configurationEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">  
-       <property name="config" ref="environmentVariablesConfiguration" />  
-    </bean>
-
-	<bean id="passwordEncoder" class="org.springframework.security.crypto.password.Pbkdf2PasswordEncoder">
-		<constructor-arg  value="GOOROOM"/>
-		<constructor-arg  value="16"/>
-		<constructor-arg  value="2000"/>
-		<constructor-arg  value="PBKDF2WithHmacSHA256"/>
-	</bean>
 	<!-- org.springframework.jdbc.datasource.DataSourceTransactionManager -->
 	<bean id="transactionManagerMeta"
 		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -101,5 +85,17 @@
 			<ref bean="dataSourceMeta" />
 		</property>
 	</bean>
-	
+
+	<bean id="gpmsEncryptor" class="kr.gooroom.encryptor.AESConfig">
+		<constructor-arg ref="configurationEncryptor" />
+	</bean>
+
+	<bean id="configurationEncryptor" class="kr.gooroom.encryptor.AESEncryptor"/>
+
+	<bean id="passwordEncoder" class="org.springframework.security.crypto.password.Pbkdf2PasswordEncoder">
+		<constructor-arg  value="GOOROOM"/>
+		<constructor-arg  value="16"/>
+		<constructor-arg  value="2000"/>
+		<constructor-arg  value="PBKDF2WithHmacSHA256"/>
+	</bean>
 </beans>

@@ -20,7 +20,21 @@
 		<jstl.version>3.0.0</jstl.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>gpms-repo</id>
+			<name>gpms repo</name>
+			<url>file://${project.basedir}/lib</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
+		<!-- gpms-encryptor-->
+		<dependency>
+			<groupId>gpms</groupId>
+			<artifactId>encryptor</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
 		<!-- Spring -->
 		<dependency>
@@ -301,19 +315,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
-		<!-- DB Cryto -->
-		<dependency>
-            <groupId>org.jasypt</groupId>
-            <artifactId>jasypt</artifactId>
-            <version>1.9.3</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.jasypt</groupId>
-            <artifactId>jasypt-spring31</artifactId>
-            <version>1.9.3</version>
-        </dependency>
 
 		<!-- json -->
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
